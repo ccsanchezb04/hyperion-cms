@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\MediaController;
 
 Route::prefix('media')
-    ->middleware(['auth:sanctum'])
+    ->middleware(['auth:sanctum', 'permission:view-media,upload-media,edit-media,delete-media'])
     ->group(function () {
 
         Route::get('/', [MediaController::class, 'index']);

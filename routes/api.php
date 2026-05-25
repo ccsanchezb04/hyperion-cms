@@ -51,4 +51,6 @@ Route::prefix('v1')
         require __DIR__ . '/api/v1/settings.php';
 
         require __DIR__ . '/api/v1/ai.php';
+
+        require __DIR__ . '/api/v1/notifications.php';
     });

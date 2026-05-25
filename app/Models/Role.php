@@ -45,10 +45,69 @@ class Role extends Model
         )->withPivot('usro_dtcrea');
     }
 
+    /**
+     * Permisos asignados a este rol.
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Permission::class,
+            'hycms_role_permissions',
+            'rope_idrole',
+            'rope_idperm',
+            'role_idrole',
+            'perm_idperm'
+        )->withPivot('rope_dtcrea');
+    }
+
     // ─── Scopes ────────────────────────────────────────────────────────────
 
     public function scopeBySlug($query, string $slug)
     {
         return $query->where('role_cdslug', $slug);
+    }
+
+    // ─── Helpers ───────────────────────────────────────────────────────────
+
+    /**
+     * Verifica si el rol tiene un permiso específico.
+     */
+    public function hasPermission(string $permissionSlug): bool
+    {
+        return $this->permissions()->where('perm_cdslug', $permissionSlug)->exists();
+    }
+
+    /**
+     * Asigna un permiso al rol.
+     */
+    public function givePermission(string|Permission $permission): void
+    {
+        if (is_string($permission)) {
+            $permission = Permission::where('perm_cdslug', $permission)->first();
+        }
+
+        if ($permission) {
+            $this->permissions()->syncWithoutDetaching([$permission->perm_idperm]);
+        }
+    }
+
+    /**
+     * Revoca un permiso del rol.
+     */
+    public function revokePermission(string $permissionSlug): void
+    {
+        $permission = Permission::where('perm_cdslug', $permissionSlug)->first();
+        if ($permission) {
+            $this->permissions()->detach($permission->perm_idperm);
+        }
+    }
+
+    /**
+     * Sincroniza los permisos del rol.
+     */
+    public function syncPermissions(array $permissionSlugs): void
+    {
+        $permissionIds = Permission::whereIn('perm_cdslug', $permissionSlugs)->pluck('perm_idperm');
+        $this->permissions()->sync($permissionIds);
     }
 }

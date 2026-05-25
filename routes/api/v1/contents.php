@@ -11,7 +11,7 @@ Route::prefix('contents')->group(function () {
 
     Route::middleware([
         'auth:sanctum',
-        'role:author,editor,admin,super-admin'
+        'permission:create-content,edit-content,delete-content'
     ])->group(function () {
 
         Route::post('/', [ContentController::class, 'store']);

@@ -7,7 +7,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/js/app.ts'],
+            input: ['resources/js/app.ts', 'resources/css/app.css'],
             refresh: true,
         }),
         vue({
@@ -23,6 +23,11 @@ export default defineConfig({
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
         },
+    },
+    server: {
+        host: '127.0.0.1',
+        port: 5173,
+        strictPort: true,
     },
     css: {
         postcss: {

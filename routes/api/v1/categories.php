@@ -11,7 +11,7 @@ Route::prefix('categories')->group(function () {
 
     Route::middleware([
         'auth:sanctum',
-        'role:editor,admin,super-admin'
+        'permission:create-category,edit-category,delete-category'
     ])->group(function () {
 
         Route::post('/', [CategoryController::class, 'store']);

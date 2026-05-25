@@ -11,7 +11,7 @@ Route::prefix('menus')->group(function () {
 
     Route::middleware([
         'auth:sanctum',
-        'role:admin,super-admin'
+        'permission:create-menu,edit-menu,delete-menu'
     ])->group(function () {
 
         Route::post('/', [MenuController::class, 'store']);

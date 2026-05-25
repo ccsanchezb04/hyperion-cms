@@ -52,6 +52,20 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
             return Inertia::render('Categories/Edit', ['id' => $id]);
         })->name('categories.edit');
     });
+
+    // Settings Routes
+    Route::prefix('settings')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Settings/Index');
+        })->name('settings.index');
+    });
+
+    // Menus Routes
+    Route::prefix('menus')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Menus/Index');
+        })->name('menus.index');
+    });
 });
 
 require __DIR__.'/settings.php';

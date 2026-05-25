@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\SettingController;
 Route::prefix('settings')
     ->middleware([
         'auth:sanctum',
-        'role:super-admin'
+        'permission:manage-settings'
     ])
     ->group(function () {
 

@@ -14,10 +14,12 @@ class DatabaseSeeder extends Seeder
         // Ejecutar seeders en orden
         $this->call([
             RoleSeeder::class,
+            PermissionSeeder::class,
             UserSeeder::class,
             CategorySeeder::class,
             SettingSeeder::class,
             MenuSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }
