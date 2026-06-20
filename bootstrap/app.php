@@ -28,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\PermissionMiddleware::class,
             'verified' =>
             \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            'locale' =>
+            \App\Http\Middleware\SetLocale::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'admin/login',

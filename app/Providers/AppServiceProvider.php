@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Models\Content;
 use App\Models\ContentSeo;
+use App\Models\ContentTranslation;
 use App\Models\ContentVersion;
 use App\Models\Media;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\Setting;
 use App\Observers\SiteCacheObserver;
+use App\Services\LocaleManager;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
@@ -18,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(LocaleManager::class);
     }
 
     public function boot(): void
@@ -39,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Invalidación de cache del sitio público al cambiar contenido.
-        $models = [Content::class, ContentSeo::class, ContentVersion::class, Media::class, Menu::class, MenuItem::class, Setting::class];
+        $models = [Content::class, ContentSeo::class, ContentTranslation::class, ContentVersion::class, Media::class, Menu::class, MenuItem::class, Setting::class];
         foreach ($models as $model) {
             $model::observe(SiteCacheObserver::class);
         }

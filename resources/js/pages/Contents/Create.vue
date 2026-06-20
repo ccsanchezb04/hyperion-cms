@@ -13,6 +13,7 @@ interface CategoryOption {
 const props = defineProps<{
     categories: CategoryOption[];
     canonicalHost?: string;
+    translatableLocales: string[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -20,6 +21,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Contents', href: '/admin/contents' },
     { title: 'Create Content', href: '/admin/contents/create' },
 ];
+
+const initialTranslations: Record<string, { title: string; body: string }> = {};
+for (const lang of props.translatableLocales) {
+    initialTranslations[lang] = { title: '', body: '' };
+}
 
 const form = useForm({
     title: '',
@@ -35,7 +41,11 @@ const form = useForm({
         canonical: '',
         noindex: false,
     },
+    translations: initialTranslations,
 });
+
+const localeLabels: Record<string, string> = { en: 'English', es: 'Español' };
+const localeFlags: Record<string, string> = { en: '🇬🇧', es: '🇪🇸' };
 
 const generateSlug = () => {
     form.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -110,6 +120,31 @@ const previewDesc = computed(() =>
                                 </div>
                             </div>
                         </div>
+
+                        <details v-if="translatableLocales.length" class="border rounded-3 p-3 mt-2">
+                            <summary class="fw-semibold mb-0" style="cursor: pointer;">
+                                <i class="bi bi-translate me-1"></i>
+                                Translations
+                            </summary>
+                            <p class="text-body-secondary small mt-2 mb-3">
+                                Traducciones del contenido. El idioma por defecto (Español)
+                                se edita arriba.
+                            </p>
+
+                            <div v-for="lang in translatableLocales" :key="`tr-${lang}`" class="mb-4 pb-3 border-bottom">
+                                <h3 class="h6 fw-semibold mb-3">
+                                    {{ localeFlags[lang] }} {{ localeLabels[lang] ?? lang.toUpperCase() }}
+                                </h3>
+                                <div class="mb-3">
+                                    <label class="form-label">Title ({{ lang.toUpperCase() }})</label>
+                                    <input v-model="form.translations[lang].title" type="text" class="form-control" maxlength="255" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Body ({{ lang.toUpperCase() }})</label>
+                                    <textarea v-model="form.translations[lang].body" rows="6" class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </details>
 
                         <details class="border rounded-3 p-3 mt-2">
                             <summary class="fw-semibold mb-0" style="cursor: pointer;">

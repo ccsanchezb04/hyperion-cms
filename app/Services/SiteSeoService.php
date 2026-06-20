@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Cache;
  *     'og'          => array,             // og:* tags
  *     'twitter'     => array,             // twitter:* tags
  *     'json_ld'     => array<int, array>, // bloques structured data (uno o más)
+ *     'alternates'  => array<int, array{hreflang: string, href: string}>, // hreflang links
  *   ]
  */
 class SiteSeoService
@@ -28,13 +29,16 @@ class SiteSeoService
     public const CACHE_PREFIX = 'hyperion:seo:';
     public const CACHE_TTL = 3600;
 
-    public function __construct(protected SiteContentService $site) {}
+    public function __construct(
+        protected SiteContentService $site,
+        protected LocaleManager $locale,
+    ) {}
 
     public function forHome(): array
     {
-        $title = $this->title('Inicio');
+        $title = $this->title($this->labelForCurrentLocale('Inicio', 'Home'));
         $description = $this->getSetting('site.seo.description', 'seo');
-        $url = $this->absoluteUrl('/');
+        $url = $this->absoluteUrl($this->localizedPath('/'));
 
         return $this->compose([
             'title'       => $title,
@@ -50,14 +54,18 @@ class SiteSeoService
             'json_ld' => [
                 $this->organizationSchema(),
             ],
+            'alternates' => $this->alternatesFor('/'),
         ]);
     }
 
     public function forSolutionsIndex(): array
     {
-        $title = $this->title($this->getSetting('site.solutions.heading', 'site', 'Soluciones'));
+        $heading = $this->getSetting('site.solutions.heading', 'site',
+            $this->labelForCurrentLocale('Soluciones', 'Solutions'));
+        $title = $this->title($heading);
         $description = $this->getSetting('site.seo.description', 'seo');
-        $url = $this->absoluteUrl('/soluciones');
+        $url = $this->absoluteUrl($this->localizedPath('/soluciones'));
+        $breadcrumbLabel = $this->labelForCurrentLocale('Soluciones', 'Solutions');
 
         return $this->compose([
             'title'       => $title,
@@ -72,10 +80,11 @@ class SiteSeoService
             ],
             'json_ld' => [
                 $this->breadcrumbSchema([
-                    ['Inicio', '/'],
-                    ['Soluciones', '/soluciones'],
+                    [$this->labelForCurrentLocale('Inicio', 'Home'), '/'],
+                    [$breadcrumbLabel, '/soluciones'],
                 ]),
             ],
+            'alternates' => $this->alternatesFor('/soluciones'),
         ]);
     }
 
@@ -125,9 +134,10 @@ class SiteSeoService
         }
 
         // Canonical: override per-page > URL absoluta calculada
+        $defaultPath = '/soluciones/' . $solution['slug'];
         $url = ! empty($override['canonical'])
             ? $override['canonical']
-            : $this->absoluteUrl('/soluciones/' . $solution['slug']);
+            : $this->absoluteUrl($this->localizedPath($defaultPath));
 
         $overrides = [
             'title'       => $title,
@@ -143,11 +153,12 @@ class SiteSeoService
             'json_ld' => [
                 $this->serviceSchema($solution, $description),
                 $this->breadcrumbSchema([
-                    ['Inicio', '/'],
-                    ['Soluciones', '/soluciones'],
-                    [$solution['title'], '/soluciones/' . $solution['slug']],
+                    [$this->labelForCurrentLocale('Inicio', 'Home'), '/'],
+                    [$this->labelForCurrentLocale('Soluciones', 'Solutions'), '/soluciones'],
+                    [$solution['title'], $defaultPath],
                 ]),
             ],
+            'alternates' => $this->alternatesFor($defaultPath),
         ];
 
         // Override per-page de noindex pisa la política global
@@ -220,6 +231,7 @@ class SiteSeoService
             'og'          => $og,
             'twitter'     => $twitter,
             'json_ld'     => $overrides['json_ld'] ?? [],
+            'alternates'  => $overrides['alternates'] ?? [],
         ];
     }
 
@@ -229,6 +241,47 @@ class SiteSeoService
         return str_replace('{page}', $page, $template);
     }
 
+    // ─── i18n helpers ─────────────────────────────────────────────────────
+
+    /**
+     * Devuelve el path localizado al locale actual a partir de la ruta default
+     * (Spanish). Para /soluciones/{slug}:
+     *   es -> /soluciones/{slug}
+     *   en -> /en/solutions/{slug}
+     */
+    protected function localizedPath(string $defaultPath): string
+    {
+        return $this->locale->urlForLocale($this->locale->current(), $defaultPath);
+    }
+
+    /**
+     * Genera el array de hreflang alternates para todos los idiomas soportados,
+     * a partir del path "canónico" en español.
+     *
+     * @return array<int, array{hreflang: string, href: string}>
+     */
+    protected function alternatesFor(string $defaultPath): array
+    {
+        $alternates = [];
+        foreach ($this->locale->supported() as $lang) {
+            $alternates[] = [
+                'hreflang' => $lang,
+                'href'     => $this->absoluteUrl($this->locale->urlForLocale($lang, $defaultPath)),
+            ];
+        }
+        // x-default apunta al locale por defecto
+        $alternates[] = [
+            'hreflang' => 'x-default',
+            'href'     => $this->absoluteUrl($this->locale->urlForLocale($this->locale->default(), $defaultPath)),
+        ];
+        return $alternates;
+    }
+
+    protected function labelForCurrentLocale(string $es, string $en): string
+    {
+        return $this->locale->current() === 'en' ? $en : $es;
+    }
+
     // ─── JSON-LD builders ─────────────────────────────────────────────────
 
     /**
@@ -236,8 +289,9 @@ class SiteSeoService
      */
     public function organizationSchema(): array
     {
-        $org = Setting::getGroup('organization');
-        $seo = Setting::getGroup('seo');
+        $lang = $this->locale->current();
+        $org = Setting::getGroup('organization', $lang);
+        $seo = Setting::getGroup('seo', $lang);
 
         $sameAs = array_values(array_filter([
             $org['site.organization.social.facebook'] ?? null,
@@ -272,7 +326,7 @@ class SiteSeoService
 
     protected function serviceSchema(array $solution, ?string $description): array
     {
-        $orgName = Setting::getValue('site.organization.name', 'JuanFer Seguros');
+        $orgName = Setting::getValue('site.organization.name', 'JuanFer Seguros', $this->locale->current());
 
         return [
             '@context'    => 'https://schema.org',
@@ -302,7 +356,7 @@ class SiteSeoService
                 '@type'    => 'ListItem',
                 'position' => $idx + 1,
                 'name'     => $label,
-                'item'     => $this->absoluteUrl($path),
+                'item'     => $this->absoluteUrl($this->localizedPath($path)),
             ];
         }
         return [
@@ -316,7 +370,7 @@ class SiteSeoService
 
     protected function getSetting(string $key, string $group, ?string $default = null): ?string
     {
-        $value = Setting::getValue($key, $default);
+        $value = Setting::getValue($key, $default, $this->locale->current());
         return $value !== '' ? $value : $default;
     }
 

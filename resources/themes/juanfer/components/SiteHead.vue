@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import type { SiteSeoData } from '../composables/useSite';
 
 defineProps<{
-    seo: SiteSeoData;
+    seo: SiteSeoData & { alternates?: { hreflang: string; href: string }[] };
 }>();
 </script>
 
@@ -27,6 +27,14 @@ defineProps<{
         <meta name="twitter:title" :content="seo.twitter.title" />
         <meta name="twitter:description" :content="seo.twitter.description" />
         <meta v-if="seo.twitter.image" name="twitter:image" :content="seo.twitter.image" />
+
+        <link
+            v-for="(alt, i) in seo.alternates ?? []"
+            :key="`alt-${i}-${alt.hreflang}`"
+            rel="alternate"
+            :hreflang="alt.hreflang"
+            :href="alt.href"
+        />
     </Head>
 
     <!--

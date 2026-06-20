@@ -47,6 +47,11 @@ export interface SiteSeoTwitter {
     image: string;
 }
 
+export interface SiteSeoAlternate {
+    hreflang: string;
+    href: string;
+}
+
 export interface SiteSeoData {
     title: string;
     description: string;
@@ -57,6 +62,7 @@ export interface SiteSeoData {
     og: SiteSeoOg;
     twitter: SiteSeoTwitter;
     json_ld: Record<string, unknown>[];
+    alternates: SiteSeoAlternate[];
 }
 
 /**

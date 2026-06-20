@@ -13,6 +13,11 @@ interface ContentSeoForm {
     noindex: boolean;
 }
 
+interface TranslationFields {
+    title: string;
+    body: string;
+}
+
 interface ContentDetail {
     id: number;
     title: string;
@@ -22,6 +27,7 @@ interface ContentDetail {
     body: string;
     categories: number[];
     seo: ContentSeoForm;
+    translations: Record<string, TranslationFields>;
 }
 
 interface CategoryOption {
@@ -33,6 +39,7 @@ const props = defineProps<{
     content: ContentDetail;
     categories: CategoryOption[];
     canonicalHost?: string;
+    translatableLocales: string[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -40,6 +47,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Contents', href: '/admin/contents' },
     { title: 'Edit Content', href: `/admin/contents/${props.content.id}/edit` },
 ];
+
+const initialTranslations: Record<string, TranslationFields> = {};
+for (const lang of props.translatableLocales) {
+    initialTranslations[lang] = {
+        title: props.content.translations?.[lang]?.title ?? '',
+        body:  props.content.translations?.[lang]?.body ?? '',
+    };
+}
 
 const form = useForm({
     title: props.content.title,
@@ -55,7 +70,17 @@ const form = useForm({
         canonical:        props.content.seo.canonical ?? '',
         noindex:          props.content.seo.noindex ?? false,
     },
+    translations: initialTranslations,
 });
+
+const localeLabels: Record<string, string> = {
+    en: 'English',
+    es: 'Español',
+};
+const localeFlags: Record<string, string> = {
+    en: '🇬🇧',
+    es: '🇪🇸',
+};
 
 const generateSlug = () => {
     form.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -131,6 +156,32 @@ const previewDesc = computed(() =>
                                 </div>
                             </div>
                         </div>
+
+                        <details v-if="translatableLocales.length" class="border rounded-3 p-3 mt-2">
+                            <summary class="fw-semibold mb-0" style="cursor: pointer;">
+                                <i class="bi bi-translate me-1"></i>
+                                Translations
+                            </summary>
+                            <p class="text-body-secondary small mt-2 mb-3">
+                                Traducciones del contenido. El idioma por defecto (Español)
+                                se edita arriba en los campos principales. Dejar vacío para
+                                que el sitio caiga al texto en español.
+                            </p>
+
+                            <div v-for="lang in translatableLocales" :key="`tr-${lang}`" class="mb-4 pb-3 border-bottom">
+                                <h3 class="h6 fw-semibold mb-3">
+                                    {{ localeFlags[lang] }} {{ localeLabels[lang] ?? lang.toUpperCase() }}
+                                </h3>
+                                <div class="mb-3">
+                                    <label class="form-label">Title ({{ lang.toUpperCase() }})</label>
+                                    <input v-model="form.translations[lang].title" type="text" class="form-control" maxlength="255" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Body ({{ lang.toUpperCase() }})</label>
+                                    <textarea v-model="form.translations[lang].body" rows="6" class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </details>
 
                         <details class="border rounded-3 p-3 mt-2" open>
                             <summary class="fw-semibold mb-0" style="cursor: pointer;">

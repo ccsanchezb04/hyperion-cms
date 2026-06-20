@@ -116,6 +116,23 @@ class Content extends Model
         return $this->hasOne(ContentSeo::class, 'cose_idcont', 'cont_idcont');
     }
 
+    /**
+     * Traducciones del contenido (1:N — una por idioma soportado).
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(ContentTranslation::class, 'cotr_idcont', 'cont_idcont');
+    }
+
+    /**
+     * Devuelve la traducción al idioma dado, o null si no existe. No carga
+     * eager; usar `->load('translations')` antes para evitar N+1.
+     */
+    public function translation(string $lang): ?ContentTranslation
+    {
+        return $this->translations->firstWhere('cotr_cdlang', $lang);
+    }
+
     // ─── Scopes ────────────────────────────────────────────────────────────
 
     public function scopePublished($query)

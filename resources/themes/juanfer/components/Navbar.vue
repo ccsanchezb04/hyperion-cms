@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSite } from '../composables/useSite';
+import LanguageSwitcher from './LanguageSwitcher.vue';
 
 const { menu } = useSite();
 </script>
@@ -25,6 +26,9 @@ const { menu } = useSite();
                         <a class="nav-link" :href="item.href">{{ item.label }}</a>
                     </li>
                 </ul>
+                <div class="ms-auto">
+                    <LanguageSwitcher />
+                </div>
             </div>
         </div>
     </nav>

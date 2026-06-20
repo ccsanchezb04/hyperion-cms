@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Content;
 use App\Models\Menu;
 use App\Models\Setting;
+use App\Services\LocaleManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
@@ -26,6 +27,8 @@ class SiteContentService
     public const CACHE_PREFIX = 'hyperion:site:';
     public const CACHE_VERSION_KEY = self::CACHE_PREFIX . 'version';
     public const CACHE_TTL = 3600;
+
+    public function __construct(protected LocaleManager $locale) {}
 
     /**
      * @return array<int, array{
@@ -105,14 +108,15 @@ class SiteContentService
      */
     public function siteSettings(): array
     {
-        return $this->remember('settings', fn() => Setting::getGroup('site'));
+        $lang = $this->locale->current();
+        return $this->remember('settings', fn() => Setting::getGroup('site', $lang));
     }
 
     public function solutionBySlug(string $slug): ?array
     {
         return $this->remember('solution:' . $slug, function () use ($slug) {
             $content = Content::published()
-                ->with(['latestVersion', 'media', 'categories.parent', 'seo'])
+                ->with(['latestVersion', 'media', 'categories.parent', 'seo', 'translations'])
                 ->where('cont_cdslug', $slug)
                 ->whereHas('categories.parent', fn($q) => $q->where('cate_cdslug', 'soluciones'))
                 ->first();
@@ -121,11 +125,13 @@ class SiteContentService
                 return null;
             }
 
+            [$title, $body] = $this->localizedTitleAndBody($content);
+
             return [
                 'id' => $content->cont_idcont,
-                'title' => $content->cont_nmtitl,
+                'title' => $title,
                 'slug' => $content->cont_cdslug,
-                'body' => $content->latestVersion?->cove_dsbody ?? '',
+                'body' => $body,
                 'image' => $this->primaryImageUrl($content),
                 'category' => $this->solutionCategorySlug($content),
                 'published_at' => $content->cont_dtpubl?->toDateTimeString(),
@@ -164,7 +170,7 @@ class SiteContentService
      */
     protected function remember(string $suffix, callable $callback)
     {
-        $key = self::CACHE_PREFIX . 'v' . self::version() . ':' . $suffix;
+        $key = self::CACHE_PREFIX . 'v' . self::version() . ':' . $this->locale->current() . ':' . $suffix;
         return Cache::remember($key, self::CACHE_TTL, $callback);
     }
 
@@ -208,7 +214,7 @@ class SiteContentService
     protected function fetchSolutions(?int $limit): array
     {
         $query = Content::published()
-            ->with(['latestVersion', 'media', 'categories.parent'])
+            ->with(['latestVersion', 'media', 'categories.parent', 'translations'])
             ->whereHas('categories.parent', fn($q) => $q->where('cate_cdslug', 'soluciones'))
             ->orderBy('cont_dtpubl');
 
@@ -216,17 +222,49 @@ class SiteContentService
             $query->limit($limit);
         }
 
+        $solutionsPrefix = $this->locale->isDefault() ? '/soluciones/' : '/' . $this->locale->current() . '/solutions/';
+
         return $query->get()
-            ->map(fn(Content $c) => [
-                'id'       => $c->cont_idcont,
-                'title'    => $c->cont_nmtitl,
-                'slug'     => $c->cont_cdslug,
-                'body'     => $c->latestVersion?->cove_dsbody ?? '',
-                'image'    => $this->primaryImageUrl($c),
-                'href'     => '/soluciones/' . $c->cont_cdslug,
-                'category' => $this->solutionCategorySlug($c),
-            ])
+            ->map(function (Content $c) use ($solutionsPrefix) {
+                [$title, $body] = $this->localizedTitleAndBody($c);
+                return [
+                    'id'       => $c->cont_idcont,
+                    'title'    => $title,
+                    'slug'     => $c->cont_cdslug,
+                    'body'     => $body,
+                    'image'    => $this->primaryImageUrl($c),
+                    'href'     => $solutionsPrefix . $c->cont_cdslug,
+                    'category' => $this->solutionCategorySlug($c),
+                ];
+            })
             ->all();
+    }
+
+    /**
+     * Devuelve [title, body] aplicando traducción si existe en el locale
+     * actual. Fallback: title del Content (cont_nmtitl) y body de la
+     * última ContentVersion.
+     *
+     * @return array{0: string, 1: string}
+     */
+    protected function localizedTitleAndBody(Content $content): array
+    {
+        $defaultTitle = $content->cont_nmtitl;
+        $defaultBody = $content->latestVersion?->cove_dsbody ?? '';
+
+        if ($this->locale->isDefault()) {
+            return [$defaultTitle, $defaultBody];
+        }
+
+        $translation = $content->translation($this->locale->current());
+        if (! $translation) {
+            return [$defaultTitle, $defaultBody];
+        }
+
+        return [
+            $translation->cotr_nmtitl ?: $defaultTitle,
+            $translation->cotr_dsbody ?: $defaultBody,
+        ];
     }
 
     /**

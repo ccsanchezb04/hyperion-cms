@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentSeo;
+use App\Models\ContentTranslation;
 use App\Models\ContentVersion;
 use App\Models\Setting;
+use App\Services\LocaleManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -56,8 +58,9 @@ class ContentController extends Controller
     public function create(): Response
     {
         return Inertia::render('Contents/Create', [
-            'categories'    => $this->categoriesForSelect(),
-            'canonicalHost' => Setting::getValue('site.seo.canonical_host', ''),
+            'categories'       => $this->categoriesForSelect(),
+            'canonicalHost'    => Setting::getValue('site.seo.canonical_host', ''),
+            'translatableLocales' => $this->translatableLocales(),
         ]);
     }
 
@@ -65,7 +68,7 @@ class ContentController extends Controller
     {
         $validated = $request->validate(array_merge($this->baseRules(), [
             'slug' => ['required', 'string', 'max:200', 'unique:hycms_contents,cont_cdslug'],
-        ], $this->seoRules()));
+        ], $this->seoRules(), $this->translationRules()));
 
         $content = Content::create([
             'cont_nmtitl' => $validated['title'],
@@ -89,27 +92,30 @@ class ContentController extends Controller
         }
 
         $this->saveSeo($content, $validated['seo'] ?? []);
+        $this->saveTranslations($content, $validated['translations'] ?? []);
 
         return redirect()->route('contents.index')->with('success', 'Content created successfully.');
     }
 
     public function edit(Content $content): Response
     {
-        $content->load(['categories', 'latestVersion', 'seo']);
+        $content->load(['categories', 'latestVersion', 'seo', 'translations']);
 
         return Inertia::render('Contents/Edit', [
             'content' => [
-                'id'         => $content->cont_idcont,
-                'title'      => $content->cont_nmtitl,
-                'slug'       => $content->cont_cdslug,
-                'type'       => $content->cont_cdtype,
-                'status'     => $content->cont_cdstat,
-                'body'       => $content->latestVersion?->cove_dsbody ?? '',
-                'categories' => $content->categories->pluck('cate_idcate')->all(),
-                'seo'        => $this->serializeSeo($content->seo),
+                'id'           => $content->cont_idcont,
+                'title'        => $content->cont_nmtitl,
+                'slug'         => $content->cont_cdslug,
+                'type'         => $content->cont_cdtype,
+                'status'       => $content->cont_cdstat,
+                'body'         => $content->latestVersion?->cove_dsbody ?? '',
+                'categories'   => $content->categories->pluck('cate_idcate')->all(),
+                'seo'          => $this->serializeSeo($content->seo),
+                'translations' => $this->serializeTranslations($content),
             ],
-            'categories'    => $this->categoriesForSelect(),
-            'canonicalHost' => Setting::getValue('site.seo.canonical_host', ''),
+            'categories'          => $this->categoriesForSelect(),
+            'canonicalHost'       => Setting::getValue('site.seo.canonical_host', ''),
+            'translatableLocales' => $this->translatableLocales(),
         ]);
     }
 
@@ -120,7 +126,7 @@ class ContentController extends Controller
                 'required', 'string', 'max:200',
                 Rule::unique('hycms_contents', 'cont_cdslug')->ignore($content->cont_idcont, 'cont_idcont'),
             ],
-        ], $this->seoRules()));
+        ], $this->seoRules(), $this->translationRules()));
 
         $wasPublished = $content->cont_cdstat === Content::STATUS_PUBLISHED;
         $content->update([
@@ -144,6 +150,7 @@ class ContentController extends Controller
         $content->categories()->sync($validated['categories'] ?? []);
 
         $this->saveSeo($content, $validated['seo'] ?? []);
+        $this->saveTranslations($content, $validated['translations'] ?? []);
 
         return redirect()->route('contents.index')->with('success', 'Content updated successfully.');
     }
@@ -241,6 +248,81 @@ class ContentController extends Controller
             'canonical'        => $seo?->cose_cdcano ?? '',
             'noindex'          => (bool) ($seo?->cose_bonoix ?? false),
         ];
+    }
+
+    /**
+     * Reglas de validación para las traducciones. Cada locale traducible
+     * acepta title y body opcionales.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    protected function translationRules(): array
+    {
+        $rules = [
+            'translations' => ['nullable', 'array'],
+        ];
+        foreach ($this->translatableLocales() as $lang) {
+            $rules["translations.{$lang}"]          = ['nullable', 'array'];
+            $rules["translations.{$lang}.title"]    = ['nullable', 'string', 'max:255'];
+            $rules["translations.{$lang}.body"]     = ['nullable', 'string'];
+        }
+        return $rules;
+    }
+
+    /**
+     * Persiste las traducciones. Si para un idioma ambos campos vienen
+     * vacíos, elimina la fila correspondiente (no contamina la tabla con
+     * registros placeholder).
+     *
+     * @param array<string, array{title?: ?string, body?: ?string}> $payload
+     */
+    protected function saveTranslations(Content $content, array $payload): void
+    {
+        foreach ($this->translatableLocales() as $lang) {
+            $values = $payload[$lang] ?? [];
+            $title = $values['title'] ?? null;
+            $body = $values['body'] ?? null;
+
+            if (empty($title) && empty($body)) {
+                ContentTranslation::where('cotr_idcont', $content->cont_idcont)
+                    ->where('cotr_cdlang', $lang)
+                    ->delete();
+                continue;
+            }
+
+            ContentTranslation::updateOrCreate(
+                ['cotr_idcont' => $content->cont_idcont, 'cotr_cdlang' => $lang],
+                ['cotr_nmtitl' => $title, 'cotr_dsbody' => $body],
+            );
+        }
+    }
+
+    /**
+     * @return array<string, array{title: string, body: string}>
+     */
+    protected function serializeTranslations(Content $content): array
+    {
+        $result = [];
+        foreach ($this->translatableLocales() as $lang) {
+            $t = $content->translation($lang);
+            $result[$lang] = [
+                'title' => $t?->cotr_nmtitl ?? '',
+                'body'  => $t?->cotr_dsbody ?? '',
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * Locales traducibles = soportados menos el default. El default usa los
+     * campos nativos del Content (cont_nmtitl / cove_dsbody).
+     *
+     * @return array<int, string>
+     */
+    protected function translatableLocales(): array
+    {
+        $locale = app(LocaleManager::class);
+        return array_values(array_diff($locale->supported(), [$locale->default()]));
     }
 
     private function categoriesForSelect(): array
