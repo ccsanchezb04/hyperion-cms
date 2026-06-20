@@ -28,10 +28,13 @@ class Setting extends Model
 
     // ─── Grupos estándar ───────────────────────────────────────────────────
 
-    const GROUP_GENERAL = 'general';
-    const GROUP_SEO     = 'seo';
-    const GROUP_MEDIA   = 'media';
-    const GROUP_MAIL    = 'mail';
+    const GROUP_GENERAL      = 'general';
+    const GROUP_SEO          = 'seo';
+    const GROUP_MEDIA        = 'media';
+    const GROUP_MAIL         = 'mail';
+    const GROUP_SITE         = 'site';
+    const GROUP_ORGANIZATION = 'organization';
+    const GROUP_INTEGRATIONS = 'integrations';
 
     // ─── Scopes ────────────────────────────────────────────────────────────
 

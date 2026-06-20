@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\UserController;
@@ -88,6 +89,15 @@ Route::prefix('admin')->group(function () {
             ->middleware('permission:view-permissions')
             ->group(function () {
                 Route::get('/', [PermissionController::class, 'index'])->name('index');
+            });
+
+        Route::prefix('seo')->name('admin.seo.')
+            ->middleware('permission:manage-seo')
+            ->group(function () {
+                Route::get('/',                [SeoController::class, 'index'])->name('index');
+                Route::put('/',                [SeoController::class, 'update'])->name('update');
+                Route::post('/og-image',       [SeoController::class, 'uploadOgImage'])->name('og-image');
+                Route::post('/sitemap/flush',  [SeoController::class, 'flushSitemap'])->name('sitemap.flush');
             });
 
         Route::prefix('themes')->name('admin.themes.')

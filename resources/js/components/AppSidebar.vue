@@ -18,6 +18,7 @@ import {
     LayoutGrid,
     ListTree,
     Paintbrush,
+    Search,
     Settings,
     ShieldCheck,
     Tags,
@@ -38,6 +39,7 @@ const allNavItems: NavItem[] = [
     { title: 'Roles', href: '/admin/roles', icon: ShieldCheck, permission: 'manage-roles' },
     { title: 'Permissions', href: '/admin/permissions', icon: KeyRound, permission: 'view-permissions' },
     { title: 'Themes', href: '/admin/themes', icon: Paintbrush, permission: 'manage-settings' },
+    { title: 'SEO', href: '/admin/seo', icon: Search, permission: 'manage-seo' },
     { title: 'Settings', href: '/admin/settings', icon: Settings, permission: 'view-settings' },
 ];
 
