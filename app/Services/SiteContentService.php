@@ -112,7 +112,7 @@ class SiteContentService
     {
         return $this->remember('solution:' . $slug, function () use ($slug) {
             $content = Content::published()
-                ->with(['latestVersion', 'media', 'categories.parent'])
+                ->with(['latestVersion', 'media', 'categories.parent', 'seo'])
                 ->where('cont_cdslug', $slug)
                 ->whereHas('categories.parent', fn($q) => $q->where('cate_cdslug', 'soluciones'))
                 ->first();
@@ -129,6 +129,13 @@ class SiteContentService
                 'image' => $this->primaryImageUrl($content),
                 'category' => $this->solutionCategorySlug($content),
                 'published_at' => $content->cont_dtpubl?->toDateTimeString(),
+                'seo_override' => $content->seo ? [
+                    'meta_title'       => $content->seo->cose_nmtitl,
+                    'meta_description' => $content->seo->cose_dsdesc,
+                    'og_image'         => $content->seo->cose_dsogim,
+                    'canonical'        => $content->seo->cose_cdcano,
+                    'noindex'          => (bool) $content->seo->cose_bonoix,
+                ] : null,
             ];
         });
     }

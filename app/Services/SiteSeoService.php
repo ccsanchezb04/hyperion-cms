@@ -82,30 +82,39 @@ class SiteSeoService
     /**
      * @param array{
      *   id?: int, title: string, slug: string, body?: string, image?: ?string,
-     *   category?: ?string
+     *   category?: ?string,
+     *   seo_override?: ?array{
+     *     meta_title?: ?string, meta_description?: ?string, og_image?: ?string,
+     *     canonical?: ?string, noindex?: bool
+     *   }
      * } $solution Array devuelto por SiteContentService::solutionBySlug.
      */
     public function forSolution(array $solution): array
     {
-        $title = $this->title($solution['title']);
+        $override = $solution['seo_override'] ?? null;
         $categorySlug = $solution['category'] ?? null;
 
-        // Description: override por categoría > body trimmed > description global
-        $description = $categorySlug
-            ? $this->getSetting("site.seo.category.{$categorySlug}.description", 'seo')
-            : null;
+        // Title: override per-page > template aplicado al título del content
+        $title = ! empty($override['meta_title'])
+            ? $override['meta_title']
+            : $this->title($solution['title']);
 
+        // Description: override per-page > override por categoría > body trimmed > description global
+        $description = $override['meta_description'] ?? null;
+
+        if (! $description && $categorySlug) {
+            $description = $this->getSetting("site.seo.category.{$categorySlug}.description", 'seo');
+        }
         if (! $description && ! empty($solution['body'])) {
             $description = $this->truncate(strip_tags($solution['body']), 160);
         }
-
         if (! $description) {
             $description = $this->getSetting('site.seo.description', 'seo');
         }
 
-        // OG image: específica de categoría > imagen del content > global
-        $ogImage = null;
-        if ($categorySlug) {
+        // OG image: override per-page > específica de categoría > imagen del content > global
+        $ogImage = $override['og_image'] ?? null;
+        if (! $ogImage && $categorySlug) {
             $ogImage = $this->getSetting("site.seo.category.{$categorySlug}.og_image", 'seo');
         }
         if (! $ogImage && ! empty($solution['image'])) {
@@ -115,9 +124,12 @@ class SiteSeoService
             $ogImage = $this->getSetting('site.seo.og_image', 'seo');
         }
 
-        $url = $this->absoluteUrl('/soluciones/' . $solution['slug']);
+        // Canonical: override per-page > URL absoluta calculada
+        $url = ! empty($override['canonical'])
+            ? $override['canonical']
+            : $this->absoluteUrl('/soluciones/' . $solution['slug']);
 
-        return $this->compose([
+        $overrides = [
             'title'       => $title,
             'description' => $description,
             'canonical'   => $url,
@@ -136,7 +148,14 @@ class SiteSeoService
                     [$solution['title'], '/soluciones/' . $solution['slug']],
                 ]),
             ],
-        ]);
+        ];
+
+        // Override per-page de noindex pisa la política global
+        if (! empty($override['noindex'])) {
+            $overrides['robots'] = 'noindex,nofollow';
+        }
+
+        return $this->compose($overrides);
     }
 
     /**
@@ -196,7 +215,7 @@ class SiteSeoService
             'description' => $overrides['description'] ?? '',
             'keywords'    => $keywords,
             'canonical'   => $overrides['canonical'] ?? '',
-            'robots'      => $robots,
+            'robots'      => $overrides['robots'] ?? $robots,
             'locale'      => $locale,
             'og'          => $og,
             'twitter'     => $twitter,

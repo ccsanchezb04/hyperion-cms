@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import FacebookCard from '@/components/SeoPreviews/FacebookCard.vue';
+import TwitterCard from '@/components/SeoPreviews/TwitterCard.vue';
 import { router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { SeoSettings } from '../Index.vue';
 
 const props = defineProps<{ settings: SeoSettings }>();
@@ -19,6 +21,15 @@ const save = () => form.put('/admin/seo', { preserveScroll: true });
 const uploadInput = ref<HTMLInputElement | null>(null);
 const uploading = ref(false);
 const uploadError = ref('');
+
+const previewTitle = computed(() => {
+    const tmpl = props.settings.seo['site.seo.title_template'] ?? '{page} | JuanFer Seguros';
+    return tmpl.replace('{page}', 'Inicio');
+});
+const previewDesc = computed(() => form.values['site.seo.og_description'] || props.settings.seo['site.seo.description'] || '');
+const previewUrl = computed(() => props.settings.seo['site.seo.canonical_host'] ?? 'https://juanferseguros.com');
+const previewImage = computed(() => form.values['site.seo.og_image']);
+const handle = computed(() => form.values['site.seo.twitter_handle']);
 
 const uploadOgImage = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -90,9 +101,20 @@ const uploadOgImage = (event: Event) => {
             <input v-model="form.values['site.seo.twitter_handle']" type="text" class="form-control" placeholder="@juanferseguros" />
         </div>
 
-        <div v-if="form.recentlySuccessful" class="alert alert-success py-2 mb-3">Settings guardados.</div>
+        <div class="row g-4 mt-2">
+            <div class="col-md-6">
+                <div class="text-body-secondary small mb-2">Preview Facebook / WhatsApp:</div>
+                <FacebookCard :title="previewTitle" :description="previewDesc" :image="previewImage" :url="previewUrl" />
+            </div>
+            <div class="col-md-6">
+                <div class="text-body-secondary small mb-2">Preview Twitter / X:</div>
+                <TwitterCard :title="previewTitle" :description="previewDesc" :image="previewImage" :url="previewUrl" :handle="handle" />
+            </div>
+        </div>
 
-        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+        <div v-if="form.recentlySuccessful" class="alert alert-success py-2 mb-3 mt-3">Settings guardados.</div>
+
+        <div class="d-flex justify-content-end gap-2 pt-3 mt-3 border-top">
             <button type="submit" class="btn btn-primary" :disabled="form.processing">
                 {{ form.processing ? 'Guardando...' : 'Guardar' }}
             </button>

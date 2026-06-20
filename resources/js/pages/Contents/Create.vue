@@ -1,15 +1,18 @@
 <script setup lang="ts">
+import GoogleSnippet from '@/components/SeoPreviews/GoogleSnippet.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface CategoryOption {
     id: number;
     name: string;
 }
 
-defineProps<{
+const props = defineProps<{
     categories: CategoryOption[];
+    canonicalHost?: string;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -25,6 +28,13 @@ const form = useForm({
     status: 'draft',
     body: '',
     categories: [] as number[],
+    seo: {
+        meta_title: '',
+        meta_description: '',
+        og_image: '',
+        canonical: '',
+        noindex: false,
+    },
 });
 
 const generateSlug = () => {
@@ -32,6 +42,17 @@ const generateSlug = () => {
 };
 
 const submit = () => form.post('/admin/contents');
+
+const previewUrl = computed(() => {
+    if (form.seo.canonical) return form.seo.canonical;
+    const host = props.canonicalHost ?? 'https://juanferseguros.com';
+    return `${host.replace(/\/$/, '')}/soluciones/${form.slug || 'slug'}`;
+});
+
+const previewTitle = computed(() => form.seo.meta_title || form.title || 'Title');
+const previewDesc = computed(() =>
+    form.seo.meta_description || (form.body ? form.body.slice(0, 160) : 'Description'),
+);
 </script>
 
 <template>
@@ -89,6 +110,49 @@ const submit = () => form.post('/admin/contents');
                                 </div>
                             </div>
                         </div>
+
+                        <details class="border rounded-3 p-3 mt-2">
+                            <summary class="fw-semibold mb-0" style="cursor: pointer;">
+                                <i class="bi bi-search me-1"></i>
+                                SEO overrides (per-page)
+                            </summary>
+                            <p class="text-body-secondary small mt-2 mb-3">
+                                Dejar vacío usa los defaults globales (configurables en /admin/seo)
+                                y la meta description de la categoría.
+                            </p>
+
+                            <div class="mb-3">
+                                <label class="form-label">Meta title override</label>
+                                <input v-model="form.seo.meta_title" type="text" class="form-control" maxlength="255" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Meta description override</label>
+                                <textarea v-model="form.seo.meta_description" class="form-control" rows="2" maxlength="320"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">OG image override</label>
+                                <input v-model="form.seo.og_image" type="text" class="form-control" placeholder="/storage/site/seo/og-custom.jpg" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Canonical URL</label>
+                                <input v-model="form.seo.canonical" type="url" class="form-control" placeholder="https://juanferseguros.com/ruta-custom" />
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input v-model="form.seo.noindex" type="checkbox" id="seo-noindex-create" class="form-check-input" />
+                                <label for="seo-noindex-create" class="form-check-label">
+                                    No indexar esta página (<code>noindex,nofollow</code>)
+                                </label>
+                            </div>
+
+                            <div class="mt-3">
+                                <div class="text-body-secondary small mb-1">Preview en Google:</div>
+                                <GoogleSnippet :title="previewTitle" :description="previewDesc" :url="previewUrl" />
+                            </div>
+                        </details>
 
                         <div class="d-flex justify-content-end gap-2">
                             <Link href="/admin/contents" class="btn btn-outline-secondary">Cancel</Link>

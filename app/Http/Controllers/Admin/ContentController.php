@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Content;
+use App\Models\ContentSeo;
 use App\Models\ContentVersion;
+use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -54,21 +56,16 @@ class ContentController extends Controller
     public function create(): Response
     {
         return Inertia::render('Contents/Create', [
-            'categories' => $this->categoriesForSelect(),
+            'categories'    => $this->categoriesForSelect(),
+            'canonicalHost' => Setting::getValue('site.seo.canonical_host', ''),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'      => ['required', 'string', 'max:200'],
-            'slug'       => ['required', 'string', 'max:200', 'unique:hycms_contents,cont_cdslug'],
-            'type'       => ['required', Rule::in([Content::TYPE_POST, Content::TYPE_PAGE, Content::TYPE_CUSTOM])],
-            'status'     => ['required', Rule::in([Content::STATUS_DRAFT, Content::STATUS_PUBLISHED, Content::STATUS_ARCHIVED])],
-            'body'       => ['nullable', 'string'],
-            'categories' => ['nullable', 'array'],
-            'categories.*' => ['integer', 'exists:hycms_categories,cate_idcate'],
-        ]);
+        $validated = $request->validate(array_merge($this->baseRules(), [
+            'slug' => ['required', 'string', 'max:200', 'unique:hycms_contents,cont_cdslug'],
+        ], $this->seoRules()));
 
         $content = Content::create([
             'cont_nmtitl' => $validated['title'],
@@ -91,12 +88,14 @@ class ContentController extends Controller
             $content->categories()->sync($validated['categories']);
         }
 
+        $this->saveSeo($content, $validated['seo'] ?? []);
+
         return redirect()->route('contents.index')->with('success', 'Content created successfully.');
     }
 
     public function edit(Content $content): Response
     {
-        $content->load(['categories', 'latestVersion']);
+        $content->load(['categories', 'latestVersion', 'seo']);
 
         return Inertia::render('Contents/Edit', [
             'content' => [
@@ -107,25 +106,21 @@ class ContentController extends Controller
                 'status'     => $content->cont_cdstat,
                 'body'       => $content->latestVersion?->cove_dsbody ?? '',
                 'categories' => $content->categories->pluck('cate_idcate')->all(),
+                'seo'        => $this->serializeSeo($content->seo),
             ],
-            'categories' => $this->categoriesForSelect(),
+            'categories'    => $this->categoriesForSelect(),
+            'canonicalHost' => Setting::getValue('site.seo.canonical_host', ''),
         ]);
     }
 
     public function update(Request $request, Content $content): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'  => ['required', 'string', 'max:200'],
-            'slug'   => [
+        $validated = $request->validate(array_merge($this->baseRules(), [
+            'slug' => [
                 'required', 'string', 'max:200',
                 Rule::unique('hycms_contents', 'cont_cdslug')->ignore($content->cont_idcont, 'cont_idcont'),
             ],
-            'type'   => ['required', Rule::in([Content::TYPE_POST, Content::TYPE_PAGE, Content::TYPE_CUSTOM])],
-            'status' => ['required', Rule::in([Content::STATUS_DRAFT, Content::STATUS_PUBLISHED, Content::STATUS_ARCHIVED])],
-            'body'   => ['nullable', 'string'],
-            'categories' => ['nullable', 'array'],
-            'categories.*' => ['integer', 'exists:hycms_categories,cate_idcate'],
-        ]);
+        ], $this->seoRules()));
 
         $wasPublished = $content->cont_cdstat === Content::STATUS_PUBLISHED;
         $content->update([
@@ -148,6 +143,8 @@ class ContentController extends Controller
 
         $content->categories()->sync($validated['categories'] ?? []);
 
+        $this->saveSeo($content, $validated['seo'] ?? []);
+
         return redirect()->route('contents.index')->with('success', 'Content updated successfully.');
     }
 
@@ -167,6 +164,83 @@ class ContentController extends Controller
     {
         $content->archive();
         return back()->with('success', 'Content archived.');
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    protected function baseRules(): array
+    {
+        return [
+            'title'        => ['required', 'string', 'max:200'],
+            'type'         => ['required', Rule::in([Content::TYPE_POST, Content::TYPE_PAGE, Content::TYPE_CUSTOM])],
+            'status'       => ['required', Rule::in([Content::STATUS_DRAFT, Content::STATUS_PUBLISHED, Content::STATUS_ARCHIVED])],
+            'body'         => ['nullable', 'string'],
+            'categories'   => ['nullable', 'array'],
+            'categories.*' => ['integer', 'exists:hycms_categories,cate_idcate'],
+        ];
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    protected function seoRules(): array
+    {
+        return [
+            'seo'                  => ['nullable', 'array'],
+            'seo.meta_title'       => ['nullable', 'string', 'max:255'],
+            'seo.meta_description' => ['nullable', 'string', 'max:320'],
+            'seo.og_image'         => ['nullable', 'string', 'max:500'],
+            'seo.canonical'        => ['nullable', 'string', 'url', 'max:500'],
+            'seo.noindex'          => ['nullable', 'boolean'],
+        ];
+    }
+
+    /**
+     * Upsert ContentSeo row. Si todos los campos vienen vacíos, elimina la
+     * fila (no contamina la tabla con registros vacíos).
+     *
+     * @param array<string, mixed> $payload
+     */
+    protected function saveSeo(Content $content, array $payload): void
+    {
+        $values = [
+            'cose_nmtitl' => $payload['meta_title'] ?? null,
+            'cose_dsdesc' => $payload['meta_description'] ?? null,
+            'cose_dsogim' => $payload['og_image'] ?? null,
+            'cose_cdcano' => $payload['canonical'] ?? null,
+            'cose_bonoix' => (bool) ($payload['noindex'] ?? false),
+        ];
+
+        $allEmpty = empty($values['cose_nmtitl'])
+            && empty($values['cose_dsdesc'])
+            && empty($values['cose_dsogim'])
+            && empty($values['cose_cdcano'])
+            && ! $values['cose_bonoix'];
+
+        if ($allEmpty) {
+            ContentSeo::where('cose_idcont', $content->cont_idcont)->delete();
+            return;
+        }
+
+        ContentSeo::updateOrCreate(
+            ['cose_idcont' => $content->cont_idcont],
+            $values
+        );
+    }
+
+    /**
+     * Devuelve la forma que consume el formulario SEO en el frontend.
+     */
+    protected function serializeSeo(?ContentSeo $seo): array
+    {
+        return [
+            'meta_title'       => $seo?->cose_nmtitl ?? '',
+            'meta_description' => $seo?->cose_dsdesc ?? '',
+            'og_image'         => $seo?->cose_dsogim ?? '',
+            'canonical'        => $seo?->cose_cdcano ?? '',
+            'noindex'          => (bool) ($seo?->cose_bonoix ?? false),
+        ];
     }
 
     private function categoriesForSelect(): array

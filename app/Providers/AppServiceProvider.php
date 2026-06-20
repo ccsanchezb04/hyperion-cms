@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Content;
+use App\Models\ContentSeo;
 use App\Models\ContentVersion;
 use App\Models\Media;
 use App\Models\Menu;
@@ -38,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Invalidación de cache del sitio público al cambiar contenido.
-        $models = [Content::class, ContentVersion::class, Media::class, Menu::class, MenuItem::class, Setting::class];
+        $models = [Content::class, ContentSeo::class, ContentVersion::class, Media::class, Menu::class, MenuItem::class, Setting::class];
         foreach ($models as $model) {
             $model::observe(SiteCacheObserver::class);
         }

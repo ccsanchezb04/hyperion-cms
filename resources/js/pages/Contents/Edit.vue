@@ -1,7 +1,17 @@
 <script setup lang="ts">
+import GoogleSnippet from '@/components/SeoPreviews/GoogleSnippet.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+interface ContentSeoForm {
+    meta_title: string;
+    meta_description: string;
+    og_image: string;
+    canonical: string;
+    noindex: boolean;
+}
 
 interface ContentDetail {
     id: number;
@@ -11,6 +21,7 @@ interface ContentDetail {
     status: string;
     body: string;
     categories: number[];
+    seo: ContentSeoForm;
 }
 
 interface CategoryOption {
@@ -21,6 +32,7 @@ interface CategoryOption {
 const props = defineProps<{
     content: ContentDetail;
     categories: CategoryOption[];
+    canonicalHost?: string;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -36,6 +48,13 @@ const form = useForm({
     status: props.content.status,
     body: props.content.body,
     categories: [...props.content.categories],
+    seo: {
+        meta_title:       props.content.seo.meta_title ?? '',
+        meta_description: props.content.seo.meta_description ?? '',
+        og_image:         props.content.seo.og_image ?? '',
+        canonical:        props.content.seo.canonical ?? '',
+        noindex:          props.content.seo.noindex ?? false,
+    },
 });
 
 const generateSlug = () => {
@@ -43,6 +62,18 @@ const generateSlug = () => {
 };
 
 const submit = () => form.put(`/admin/contents/${props.content.id}`);
+
+// Preview-only: arma la URL final usando canonical override o el host configurado
+const previewUrl = computed(() => {
+    if (form.seo.canonical) return form.seo.canonical;
+    const host = props.canonicalHost ?? 'https://juanferseguros.com';
+    return `${host.replace(/\/$/, '')}/soluciones/${form.slug}`;
+});
+
+const previewTitle = computed(() => form.seo.meta_title || form.title || 'Title');
+const previewDesc = computed(() =>
+    form.seo.meta_description || (form.body ? form.body.slice(0, 160) : 'Description'),
+);
 </script>
 
 <template>
@@ -100,6 +131,59 @@ const submit = () => form.put(`/admin/contents/${props.content.id}`);
                                 </div>
                             </div>
                         </div>
+
+                        <details class="border rounded-3 p-3 mt-2" open>
+                            <summary class="fw-semibold mb-0" style="cursor: pointer;">
+                                <i class="bi bi-search me-1"></i>
+                                SEO overrides (per-page)
+                            </summary>
+                            <p class="text-body-secondary small mt-2 mb-3">
+                                Dejar vacío usa los defaults globales (configurables en /admin/seo)
+                                y la meta description de la categoría. Estos campos pisan esos defaults
+                                solo para esta página.
+                            </p>
+
+                            <div class="mb-3">
+                                <label class="form-label">Meta title override</label>
+                                <input v-model="form.seo.meta_title" type="text" class="form-control" :class="{ 'is-invalid': form.errors['seo.meta_title'] }" maxlength="255" />
+                                <div class="form-text">Si vacío, se usa el título de la página con el template global.</div>
+                                <div v-if="form.errors['seo.meta_title']" class="invalid-feedback d-block">{{ form.errors['seo.meta_title'] }}</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Meta description override</label>
+                                <textarea v-model="form.seo.meta_description" class="form-control" :class="{ 'is-invalid': form.errors['seo.meta_description'] }" rows="2" maxlength="320"></textarea>
+                                <div class="form-text">Si vacío, se usa la meta description de la categoría.</div>
+                                <div v-if="form.errors['seo.meta_description']" class="invalid-feedback d-block">{{ form.errors['seo.meta_description'] }}</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">OG image override</label>
+                                <input v-model="form.seo.og_image" type="text" class="form-control" :class="{ 'is-invalid': form.errors['seo.og_image'] }" placeholder="/storage/site/seo/og-custom.jpg" />
+                                <div class="form-text">Path o URL absoluta. Si vacío se usa la OG de la categoría.</div>
+                                <div v-if="form.errors['seo.og_image']" class="invalid-feedback d-block">{{ form.errors['seo.og_image'] }}</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Canonical URL</label>
+                                <input v-model="form.seo.canonical" type="url" class="form-control" :class="{ 'is-invalid': form.errors['seo.canonical'] }" placeholder="https://juanferseguros.com/ruta-custom" />
+                                <div class="form-text">Si vacío se calcula automáticamente.</div>
+                                <div v-if="form.errors['seo.canonical']" class="invalid-feedback d-block">{{ form.errors['seo.canonical'] }}</div>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input v-model="form.seo.noindex" type="checkbox" id="seo-noindex" class="form-check-input" />
+                                <label for="seo-noindex" class="form-check-label">
+                                    No indexar esta página (<code>noindex,nofollow</code>)
+                                </label>
+                                <div class="form-text">Pisa la política global de robots solo para esta página.</div>
+                            </div>
+
+                            <div class="mt-3">
+                                <div class="text-body-secondary small mb-1">Preview en Google:</div>
+                                <GoogleSnippet :title="previewTitle" :description="previewDesc" :url="previewUrl" />
+                            </div>
+                        </details>
 
                         <div class="d-flex justify-content-end gap-2">
                             <Link href="/admin/contents" class="btn btn-outline-secondary">Cancel</Link>

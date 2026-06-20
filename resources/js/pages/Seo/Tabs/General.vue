@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import GoogleSnippet from '@/components/SeoPreviews/GoogleSnippet.vue';
 import { useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import type { SeoSettings } from '../Index.vue';
 
 const props = defineProps<{ settings: SeoSettings }>();
@@ -18,6 +20,13 @@ const form = useForm({
 });
 
 const save = () => form.put('/admin/seo', { preserveScroll: true });
+
+const previewTitle = computed(() =>
+    (form.values['site.seo.title_template'] || '{page} | JuanFer Seguros').replace('{page}', 'Inicio'),
+);
+const previewUrl = computed(() => form.values['site.seo.canonical_host'] || 'https://juanferseguros.com');
+const previewDesc = computed(() => form.values['site.seo.description'] || '');
+const siteName = computed(() => props.settings.site['site.heading'] ?? 'JuanFer Seguros');
 </script>
 
 <template>
@@ -75,9 +84,14 @@ const save = () => form.put('/admin/seo', { preserveScroll: true });
             </div>
         </div>
 
-        <div v-if="form.recentlySuccessful" class="alert alert-success py-2 mb-3">Settings guardados.</div>
+        <div class="mt-4">
+            <div class="text-body-secondary small mb-1">Preview en Google (página Inicio):</div>
+            <GoogleSnippet :title="previewTitle" :description="previewDesc" :url="previewUrl" :site-name="siteName" />
+        </div>
 
-        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+        <div v-if="form.recentlySuccessful" class="alert alert-success py-2 mb-3 mt-3">Settings guardados.</div>
+
+        <div class="d-flex justify-content-end gap-2 pt-3 mt-3 border-top">
             <button type="submit" class="btn btn-primary" :disabled="form.processing">
                 {{ form.processing ? 'Guardando...' : 'Guardar' }}
             </button>
