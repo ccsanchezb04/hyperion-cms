@@ -1,229 +1,91 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    parent_id: number | null;
+}
+
+interface CategoryOption {
+    id: number;
+    name: string;
+    slug: string;
+    level: number;
+}
 
 const props = defineProps<{
-    id: number;
+    category: Category;
+    categories: CategoryOption[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Categories',
-        href: '/admin/categories',
-    },
-    {
-        title: 'Edit Category',
-        href: `/admin/categories/${props.id}/edit`,
-    },
+    { title: 'Dashboard', href: '/admin/dashboard' },
+    { title: 'Categories', href: '/admin/categories' },
+    { title: 'Edit Category', href: `/admin/categories/${props.category.id}/edit` },
 ];
 
-const form = ref({
-    name: '',
-    slug: '',
-    parent_id: null as number | null,
+const form = useForm({
+    name: props.category.name,
+    slug: props.category.slug,
+    parent_id: props.category.parent_id,
 });
-
-const categories = ref([]);
-const loading = ref(false);
-const errors = ref<Record<string, string>>({});
 
 const generateSlug = () => {
-    form.value.slug = form.value.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+    form.slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 };
 
-const fetchCategory = async () => {
-    try {
-        const response = await fetch(`/api/v1/categories/${props.id}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Accept': 'application/json',
-            },
-        });
-        const data = await response.json();
-        const category = data.data;
-        
-        form.value = {
-            name: category.name,
-            slug: category.slug,
-            parent_id: category.parent_id,
-        };
-    } catch (error) {
-        console.error('Error fetching category:', error);
-    }
-};
-
-const fetchCategories = async () => {
-    try {
-        const response = await fetch('/api/v1/categories/tree', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Accept': 'application/json',
-            },
-        });
-        const data = await response.json();
-        categories.value = data.data;
-    } catch (error) {
-        console.error('Error fetching categories:', error);
-    }
-};
-
-const flattenCategories = (cats: any[], level = 0, excludeId: number | null = null): any[] => {
-    const result: any[] = [];
-    cats.forEach(cat => {
-        if (cat.id !== excludeId) {
-            result.push({
-                ...cat,
-                level,
-                name: '  '.repeat(level) + cat.name,
-            });
-            if (cat.children && cat.children.length > 0) {
-                result.push(...flattenCategories(cat.children, level + 1, excludeId));
-            }
-        }
-    });
-    return result;
-};
-
-const submitForm = async () => {
-    loading.value = true;
-    errors.value = {};
-
-    try {
-        const response = await fetch(`/api/v1/categories/${props.id}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(form.value),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            if (data.errors) {
-                errors.value = data.errors;
-            } else {
-                errors.value = { general: data.message || 'An error occurred' };
-            }
-            return;
-        }
-
-        router.visit('/admin/categories');
-    } catch (error) {
-        console.error('Error updating category:', error);
-        errors.value = { general: 'An error occurred while updating the category' };
-    } finally {
-        loading.value = false;
-    }
-};
-
-onMounted(() => {
-    fetchCategory();
-    fetchCategories();
-});
+const submit = () => form.put(`/admin/categories/${props.category.id}`);
 </script>
 
 <template>
     <Head title="Edit Category" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h1 class="text-2xl font-bold text-gray-900 mb-6">Edit Category</h1>
+        <div class="container-xl py-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h1 class="h4 fw-bold mb-4">Edit Category</h1>
 
-                        <!-- Error Messages -->
-                        <div v-if="errors.general" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                            {{ errors.general }}
+                    <form @submit.prevent="submit" class="d-flex flex-column gap-3">
+                        <div>
+                            <label class="form-label">Name *</label>
+                            <input
+                                v-model="form.name"
+                                type="text"
+                                class="form-control"
+                                :class="{ 'is-invalid': form.errors.name }"
+                                @input="generateSlug"
+                                required
+                            />
+                            <div v-if="form.errors.name" class="invalid-feedback d-block">{{ form.errors.name }}</div>
                         </div>
 
-                        <form @submit.prevent="submitForm">
-                            <!-- Name -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Name *
-                                </label>
-                                <input
-                                    v-model="form.name"
-                                    type="text"
-                                    class="w-full border border-gray-300 rounded-md px-4 py-2"
-                                    @input="generateSlug"
-                                    required
-                                />
-                                <div v-if="errors.name" class="text-red-600 text-sm mt-1">
-                                    {{ errors.name }}
-                                </div>
-                            </div>
+                        <div>
+                            <label class="form-label">Slug *</label>
+                            <input v-model="form.slug" type="text" class="form-control" :class="{ 'is-invalid': form.errors.slug }" required />
+                            <div v-if="form.errors.slug" class="invalid-feedback d-block">{{ form.errors.slug }}</div>
+                        </div>
 
-                            <!-- Slug -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Slug *
-                                </label>
-                                <input
-                                    v-model="form.slug"
-                                    type="text"
-                                    class="w-full border border-gray-300 rounded-md px-4 py-2"
-                                    required
-                                />
-                                <div v-if="errors.slug" class="text-red-600 text-sm mt-1">
-                                    {{ errors.slug }}
-                                </div>
-                            </div>
+                        <div>
+                            <label class="form-label">Parent Category</label>
+                            <select v-model="form.parent_id" class="form-select" :class="{ 'is-invalid': form.errors.parent_id }">
+                                <option :value="null">No Parent (Root Category)</option>
+                                <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                            </select>
+                            <div v-if="form.errors.parent_id" class="invalid-feedback d-block">{{ form.errors.parent_id }}</div>
+                        </div>
 
-                            <!-- Parent Category -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Parent Category
-                                </label>
-                                <select
-                                    v-model="form.parent_id"
-                                    class="w-full border border-gray-300 rounded-md px-4 py-2"
-                                >
-                                    <option :value="null">No Parent (Root Category)</option>
-                                    <option 
-                                        v-for="category in flattenCategories(categories, 0, props.id)" 
-                                        :key="category.id" 
-                                        :value="category.id"
-                                    >
-                                        {{ category.name }}
-                                    </option>
-                                </select>
-                                <div v-if="errors.parent_id" class="text-red-600 text-sm mt-1">
-                                    {{ errors.parent_id }}
-                                </div>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="flex justify-end space-x-4">
-                                <Link
-                                    href="/admin/categories"
-                                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                                >
-                                    Cancel
-                                </Link>
-                                <button
-                                    type="submit"
-                                    :disabled="loading"
-                                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                                >
-                                    {{ loading ? 'Updating...' : 'Update Category' }}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <Link href="/admin/categories" class="btn btn-outline-secondary">Cancel</Link>
+                            <button type="submit" class="btn btn-primary" :disabled="form.processing">
+                                {{ form.processing ? 'Updating...' : 'Update Category' }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

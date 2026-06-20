@@ -1,0 +1,9 @@
+{
+    "name": "Default",
+    "slug": "default",
+    "version": "0.1.0",
+    "description": "Tema minimalista de referencia (sin Bootstrap). Útil como prueba de switch y punto de partida para temas nuevos.",
+    "author": "Hyperion CMS",
+    "entry": "site.entry.ts",
+    "sections": ["hero", "solutions", "contact"]
+}

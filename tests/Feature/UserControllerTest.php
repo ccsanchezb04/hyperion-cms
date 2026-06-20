@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -31,20 +31,17 @@ class UserControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => [
-                        'user_iduser',
-                        'user_nmname',
-                        'user_dsemai',
-                    ]
-                ]
+                    '*' => ['id', 'name', 'status'],
+                ],
             ]);
     }
 
     public function test_index_denies_without_permission()
     {
-        $viewerRole = Role::where('role_cdslug', 'viewer')->first();
+        // Editor does not include 'view-users' in the seeded permission set.
+        $editorRole = Role::where('role_cdslug', 'editor')->first();
         $user = User::factory()->create();
-        $user->roles()->attach($viewerRole);
+        $user->roles()->attach($editorRole);
 
         $token = $user->createToken('test-token')->plainTextToken;
 
@@ -75,9 +72,10 @@ class UserControllerTest extends TestCase
 
     public function test_store_denies_without_permission()
     {
-        $adminRole = Role::where('role_cdslug', 'admin')->first();
+        // Viewer doesn't have create-user.
+        $viewerRole = Role::where('role_cdslug', 'viewer')->first();
         $user = User::factory()->create();
-        $user->roles()->attach($adminRole);
+        $user->roles()->attach($viewerRole);
 
         $token = $user->createToken('test-token')->plainTextToken;
 
@@ -106,9 +104,9 @@ class UserControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'user_iduser' => $targetUser->user_iduser,
-                    'user_nmname' => $targetUser->user_nmname,
-                ]
+                    'id' => $targetUser->user_iduser,
+                    'name' => $targetUser->user_nmname,
+                ],
             ]);
     }
 

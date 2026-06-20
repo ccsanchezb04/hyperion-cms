@@ -2,12 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Role;
 use App\Models\Content;
-use App\Models\Category;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class ContentControllerTest extends TestCase
@@ -20,35 +18,49 @@ class ContentControllerTest extends TestCase
         $this->seed();
     }
 
+    /**
+     * The project doesn't ship a ContentFactory yet, so each test that needs a
+     * Content row builds one explicitly via the model.
+     */
+    private function createContent(array $overrides = []): Content
+    {
+        $author = User::factory()->create();
+
+        return Content::create(array_merge([
+            'cont_nmtitl' => 'Test Content',
+            'cont_cdslug' => 'test-content-' . uniqid(),
+            'cont_cdtype' => Content::TYPE_POST,
+            'cont_cdstat' => Content::STATUS_DRAFT,
+            'cont_idauth' => $author->user_iduser,
+        ], $overrides));
+    }
+
     public function test_index_returns_contents_list()
     {
+        $this->createContent();
+
         $response = $this->getJson('/api/v1/contents');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => [
-                        'cove_idcont',
-                        'cove_cdslug',
-                        'cove_dstitl',
-                        'cove_cdstat',
-                    ]
-                ]
+                    '*' => ['id', 'title', 'slug', 'status'],
+                ],
             ]);
     }
 
     public function test_show_returns_single_content_by_slug()
     {
-        $content = Content::first();
+        $content = $this->createContent();
 
-        $response = $this->getJson("/api/v1/contents/{$content->cove_cdslug}");
+        $response = $this->getJson("/api/v1/contents/{$content->cont_cdslug}");
 
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'cove_idcont' => $content->cove_idcont,
-                    'cove_cdslug' => $content->cove_cdslug,
-                ]
+                    'id' => $content->cont_idcont,
+                    'slug' => $content->cont_cdslug,
+                ],
             ]);
     }
 
@@ -66,7 +78,6 @@ class ContentControllerTest extends TestCase
                 'slug' => 'test-content',
                 'content' => 'Test content body',
                 'status' => 'draft',
-                'cove_idcate' => 1,
             ]);
 
         $this->assertNotEquals(403, $response->status());
@@ -97,13 +108,13 @@ class ContentControllerTest extends TestCase
         $user = User::factory()->create();
         $user->roles()->attach($editorRole);
 
-        $content = Content::first();
+        $content = $this->createContent();
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->putJson("/api/v1/contents/{$content->cove_idcont}", [
+            ->putJson("/api/v1/contents/{$content->cont_idcont}", [
                 'title' => 'Updated Title',
-                'slug' => $content->cove_cdslug,
+                'slug' => $content->cont_cdslug,
                 'content' => 'Updated content',
                 'status' => 'published',
             ]);
@@ -117,11 +128,11 @@ class ContentControllerTest extends TestCase
         $user = User::factory()->create();
         $user->roles()->attach($editorRole);
 
-        $content = Content::first();
+        $content = $this->createContent();
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->deleteJson("/api/v1/contents/{$content->cove_idcont}");
+            ->deleteJson("/api/v1/contents/{$content->cont_idcont}");
 
         $this->assertNotEquals(403, $response->status());
     }
@@ -132,11 +143,11 @@ class ContentControllerTest extends TestCase
         $user = User::factory()->create();
         $user->roles()->attach($editorRole);
 
-        $content = Content::where('cove_cdstat', 'draft')->first();
+        $content = $this->createContent(['cont_cdstat' => Content::STATUS_DRAFT]);
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson("/api/v1/contents/{$content->cove_idcont}/publish");
+            ->postJson("/api/v1/contents/{$content->cont_idcont}/publish");
 
         $this->assertNotEquals(403, $response->status());
     }
@@ -147,11 +158,11 @@ class ContentControllerTest extends TestCase
         $user = User::factory()->create();
         $user->roles()->attach($editorRole);
 
-        $content = Content::first();
+        $content = $this->createContent();
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson("/api/v1/contents/{$content->cove_idcont}/archive");
+            ->postJson("/api/v1/contents/{$content->cont_idcont}/archive");
 
         $this->assertNotEquals(403, $response->status());
     }

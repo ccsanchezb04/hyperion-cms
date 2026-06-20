@@ -32,14 +32,15 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:hycms_users,user_dsemai',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'user_nmname' => $request->name,
+            'user_dsemai' => $request->email,
+            'user_cdpass' => Hash::make($request->password),
+            'user_cdstat' => 'active',
         ]);
 
         event(new Registered($user));

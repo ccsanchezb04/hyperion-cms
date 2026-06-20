@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,10 +27,16 @@ class User extends Authenticatable
         'user_dsemai',
         'user_cdpass',
         'user_cdstat',
+        'email_verified_at',
+        // Canonical aliases — mutators forward these to the hycms_ columns.
+        'name',
+        'email',
+        'password',
     ];
 
     protected $hidden = [
         'user_cdpass',
+        'password',
     ];
 
     protected $casts = [
@@ -51,6 +58,54 @@ class User extends Authenticatable
 
     const STATUS_ACTIVE   = 'active';
     const STATUS_INACTIVE = 'inactive';
+
+    // ─── Accessors canónicos ───────────────────────────────────────────────
+    //
+    // Exponen los nombres estándar (id, name, email, avatar) que ya usan los
+    // Resources de la API y el frontend, mapeando a las columnas hycms_.
+    // Los setters escriben en la columna real para que `$user->name = '...'`
+    // y `fill()` funcionen igual que en un modelo Laravel convencional.
+
+    protected function id(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->user_iduser,
+            set: fn ($value) => ['user_iduser' => $value],
+        );
+    }
+
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->user_nmname,
+            set: fn ($value) => ['user_nmname' => $value],
+        );
+    }
+
+    protected function email(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->user_dsemai,
+            set: fn ($value) => ['user_dsemai' => $value],
+        );
+    }
+
+    protected function avatar(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->attributes['avatar'] ?? null,
+        );
+    }
+
+    // Laravel's `current_password` validation rule and Hash::check helpers
+    // read `$user->password` directly; expose the hashed value here.
+    protected function password(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->user_cdpass,
+            set: fn ($value) => ['user_cdpass' => $value],
+        );
+    }
 
     // ─── Relaciones ────────────────────────────────────────────────────────
 
@@ -173,6 +228,28 @@ class User extends Authenticatable
         return true;
     }
 
+    /**
+     * Lista plana de slugs de permisos del usuario (resolviendo roles).
+     * Devuelve ['*'] para super-admin como marcador de "todo permitido".
+     * Se expone vía Inertia (HandleInertiaRequests) para que el frontend
+     * pueda filtrar elementos de menú sin disparar 403.
+     */
+    public function getPermissionSlugs(): array
+    {
+        if ($this->isAdmin()) {
+            return ['*'];
+        }
+
+        return $this->roles
+            ->loadMissing('permissions')
+            ->pluck('permissions')
+            ->flatten()
+            ->pluck('perm_cdslug')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     // ─── Helpers de notificaciones ───────────────────────────────────────────
 
     /**
@@ -222,6 +299,22 @@ class User extends Authenticatable
     }
 
     public function getEmailForPasswordReset(): string
+    {
+        return $this->user_dsemai;
+    }
+
+    /**
+     * Nombre de la columna usada para el email en autenticación.
+     */
+    public function getAuthIdentifierName(): string
+    {
+        return 'user_dsemai';
+    }
+
+    /**
+     * Valor del identificador de autenticación (email).
+     */
+    public function getAuthIdentifier(): mixed
     {
         return $this->user_dsemai;
     }

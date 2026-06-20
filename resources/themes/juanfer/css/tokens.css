@@ -1,0 +1,17 @@
+:root {
+    --jf-primary: #141e3c;
+    --jf-secondary: #2f71b3;
+    --jf-text-light: #ffffff;
+    --jf-text-dark: #171b26;
+    --jf-bg: #ffffff;
+    --jf-bg-muted: #f6f7fb;
+    --jf-border: #e5e8f0;
+
+    --jf-font-base: 16px;
+    --jf-font-sans: 'Arial', Helvetica, 'Helvetica Neue', sans-serif;
+    --jf-font-body: 'Creato Display', 'Montserrat', var(--jf-font-sans);
+    --jf-font-heading: 'Montserrat', var(--jf-font-sans);
+
+    --jf-radius: 4px;
+    --jf-spacing: 8px;
+}

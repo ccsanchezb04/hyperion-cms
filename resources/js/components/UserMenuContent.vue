@@ -1,37 +1,30 @@
 <script setup lang="ts">
 import UserInfo from '@/components/UserInfo.vue';
-import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { User } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { LogOut, Settings } from 'lucide-vue-next';
 
-interface Props {
+defineProps<{
     user: User;
-}
-
-defineProps<Props>();
+}>();
 </script>
 
 <template>
-    <DropdownMenuLabel class="p-0 font-normal">
-        <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <UserInfo :user="user" :show-email="true" />
-        </div>
-    </DropdownMenuLabel>
-    <DropdownMenuSeparator />
-    <DropdownMenuGroup>
-        <DropdownMenuItem :as-child="true">
-            <Link class="block w-full" :href="route('profile.edit')" as="button">
-                <Settings class="mr-2 h-4 w-4" />
-                Settings
-            </Link>
-        </DropdownMenuItem>
-    </DropdownMenuGroup>
-    <DropdownMenuSeparator />
-    <DropdownMenuItem :as-child="true">
-        <Link class="block w-full" method="post" :href="route('logout')" as="button">
-            <LogOut class="mr-2 h-4 w-4" />
-            Log out
+    <li class="px-3 py-2">
+        <UserInfo :user="user" :show-email="true" />
+    </li>
+    <li><hr class="dropdown-divider" /></li>
+    <li>
+        <Link :href="route('profile.edit')" class="dropdown-item d-flex align-items-center gap-2">
+            <Settings :size="16" />
+            <span>Settings</span>
         </Link>
-    </DropdownMenuItem>
+    </li>
+    <li><hr class="dropdown-divider" /></li>
+    <li>
+        <Link method="post" :href="route('logout')" as="button" class="dropdown-item d-flex align-items-center gap-2 w-100 text-start">
+            <LogOut :size="16" />
+            <span>Log out</span>
+        </Link>
+    </li>
 </template>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/composables/useInitials';
 import type { User } from '@/types';
 import { computed } from 'vue';
@@ -15,20 +14,21 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { getInitials } = useInitials();
 
-// Compute whether we should show the avatar image
-const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '');
+const showAvatar = computed(() => Boolean(props.user.avatar));
 </script>
 
 <template>
-    <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
-        <AvatarImage v-if="showAvatar" :src="user.avatar" :alt="user.name" />
-        <AvatarFallback class="rounded-lg text-black dark:text-white">
-            {{ getInitials(user.name) }}
-        </AvatarFallback>
-    </Avatar>
-
-    <div class="grid flex-1 text-left text-sm leading-tight">
-        <span class="truncate font-medium">{{ user.name }}</span>
-        <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{ user.email }}</span>
+    <div class="d-flex align-items-center gap-2 text-start">
+        <span
+            class="d-inline-flex align-items-center justify-content-center rounded-circle bg-body-secondary fw-semibold flex-shrink-0"
+            style="width: 2rem; height: 2rem; font-size: 0.8rem;"
+        >
+            <img v-if="showAvatar" :src="user.avatar" :alt="user.name" class="rounded-circle w-100 h-100" />
+            <template v-else>{{ getInitials(user.name) }}</template>
+        </span>
+        <div class="d-flex flex-column overflow-hidden lh-sm">
+            <span class="fw-medium text-truncate">{{ user.name }}</span>
+            <span v-if="showEmail" class="small text-body-secondary text-truncate">{{ user.email }}</span>
+        </div>
     </div>
 </template>

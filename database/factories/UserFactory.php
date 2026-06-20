@@ -28,13 +28,14 @@ class UserFactory extends Factory
             'user_dsemai' => fake()->unique()->safeEmail(),
             'user_cdpass' => static::$password ??= Hash::make('password'),
             'user_cdstat' => 'active',
+            'email_verified_at' => now(),
         ];
     }
 
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [
-            'user_cdstat' => 'inactive',
+            'email_verified_at' => null,
         ]);
     }
 

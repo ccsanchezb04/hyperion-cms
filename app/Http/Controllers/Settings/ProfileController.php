@@ -29,13 +29,17 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Mapear campos del request a los campos personalizados
+        $user->user_nmname = $request->name;
+        $user->user_dsemai = $request->email;
+
+        if ($user->isDirty('user_dsemai')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return to_route('profile.edit');
     }

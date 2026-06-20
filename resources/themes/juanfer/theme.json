@@ -1,0 +1,23 @@
+{
+    "name": "JuanFer Seguros",
+    "slug": "juanfer",
+    "version": "0.1.0",
+    "description": "Theme inicial portado del sitio JuanFer Seguros.",
+    "author": "Hyperion CMS",
+    "entry": "site.entry.ts",
+    "sections": [
+        "hero",
+        "carousel",
+        "solutions",
+        "about",
+        "testimonials",
+        "contact",
+        "footer"
+    ],
+    "favicon": {
+        "ico": "themes/juanfer/favicons/favicon.ico",
+        "png_16": "themes/juanfer/favicons/favicon-16.png",
+        "png_32": "themes/juanfer/favicons/favicon-32.png",
+        "apple_touch_180": "themes/juanfer/favicons/apple-touch-icon-180.png"
+    }
+}

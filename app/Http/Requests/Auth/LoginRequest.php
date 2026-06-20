@@ -33,6 +33,16 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Get custom attributes for validator errors.
+     */
+    public function attributes(): array
+    {
+        return [
+            'email' => 'email',
+        ];
+    }
+
+    /**
      * Attempt to authenticate the request's credentials.
      *
      * @throws \Illuminate\Validation\ValidationException
@@ -41,7 +51,13 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // Mapear el campo email a user_dsemai para autenticación
+        $credentials = [
+            'user_dsemai' => $this->input('email'),
+            'password' => $this->input('password'),
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

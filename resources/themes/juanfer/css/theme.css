@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import './tokens.css';
+
+@font-face {
+    font-family: 'Creato Display';
+    src: url('../assets/fonts/CreatoDisplay-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Creato Display';
+    src: url('../assets/fonts/CreatoDisplay-ExtraBold.otf') format('opentype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--jf-font-body);
+    font-size: var(--jf-font-base);
+    color: var(--jf-text-dark);
+    background-color: var(--jf-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.jf-dark-bg {
+    background-color: var(--jf-primary);
+    color: var(--jf-text-light);
+}
+
+.jf-heading {
+    color: var(--jf-secondary);
+    font-family: var(--jf-font-heading);
+}
+
+.jf-text-justify {
+    text-align: justify;
+}
+
+.jf-btn {
+    display: inline-block;
+    background-color: var(--jf-secondary);
+    color: var(--jf-text-light);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--jf-radius);
+    font-family: var(--jf-font-heading);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+
+.jf-btn:hover {
+    background-color: var(--jf-primary);
+    color: var(--jf-text-light);
+}
+
+.jf-btn--secondary {
+    background-color: var(--jf-primary);
+}
+
+.jf-btn--secondary:hover {
+    background-color: var(--jf-secondary);
+}
+
+/* Navbar (replica del index.html original) */
+.jf-navbar a {
+    color: var(--jf-text-light);
+    font-family: var(--jf-font-heading);
+}
+.jf-navbar a:hover {
+    color: var(--jf-secondary);
+}
+.jf-navbar .nav-link {
+    font-size: 1.125rem;
+    padding: 0.5rem 1rem;
+    min-width: 120px;
+    text-align: center;
+}
+@media (max-width: 576px) {
+    .jf-navbar .nav-link {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+        min-width: 0;
+    }
+}
+
+/* Logo container del hero (círculo) */
+.jf-logo-container {
+    border-radius: 50%;
+    width: 250px;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin: 0;
+}
+.jf-logo-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+}

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             MenuSeeder::class,
             NotificationSeeder::class,
+            SiteSeeder::class,
         ]);
     }
 }

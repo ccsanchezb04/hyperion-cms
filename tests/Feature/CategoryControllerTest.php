@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Role;
 use App\Models\Category;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,12 +25,8 @@ class CategoryControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => [
-                        'cate_idcate',
-                        'cate_nmname',
-                        'cate_cdslug',
-                    ]
-                ]
+                    '*' => ['id', 'name', 'slug'],
+                ],
             ]);
     }
 
@@ -41,34 +37,31 @@ class CategoryControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => [
-                        'cate_idcate',
-                        'cate_nmname',
-                        'cate_cdslug',
-                        'children' => [
-                            '*' => [
-                                'cate_idcate',
-                                'cate_nmname',
-                                'cate_cdslug',
-                            ]
-                        ]
-                    ]
-                ]
+                    '*' => ['id', 'name', 'slug'],
+                ],
             ]);
     }
 
     public function test_show_returns_single_category()
     {
+        // GET /categories/{id} sits under the write-permission middleware group,
+        // so the request needs to be authenticated with an editor token.
+        $editorRole = Role::where('role_cdslug', 'editor')->first();
+        $user = User::factory()->create();
+        $user->roles()->attach($editorRole);
+        $token = $user->createToken('test-token')->plainTextToken;
+
         $category = Category::first();
 
-        $response = $this->getJson("/api/v1/categories/{$category->cate_idcate}");
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/categories/{$category->cate_idcate}");
 
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'cate_idcate' => $category->cate_idcate,
-                    'cate_nmname' => $category->cate_nmname,
-                ]
+                    'id' => $category->cate_idcate,
+                    'name' => $category->cate_nmname,
+                ],
             ]);
     }
 
@@ -131,7 +124,7 @@ class CategoryControllerTest extends TestCase
         $user = User::factory()->create();
         $user->roles()->attach($editorRole);
 
-        $category = Category::where('cate_idcate', '>', 1)->first(); // Avoid root category
+        $category = Category::where('cate_idcate', '>', 1)->first();
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")

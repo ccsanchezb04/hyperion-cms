@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@inertiajs/vue3';
 
 defineProps<{
@@ -10,26 +9,22 @@ defineProps<{
 </script>
 
 <template>
-    <div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
-        <div class="flex w-full max-w-md flex-col gap-6">
-            <Link :href="route('home')" class="flex items-center gap-2 self-center font-medium">
-                <div class="flex h-9 w-9 items-center justify-center">
-                    <AppLogoIcon class="size-9 fill-current text-black dark:text-white" />
-                </div>
+    <div class="min-vh-100 d-flex flex-column align-items-center justify-content-center bg-body-tertiary p-3 p-md-5">
+        <div class="w-100 d-flex flex-column gap-3" style="max-width: 28rem;">
+            <Link :href="route('home')" class="d-flex align-items-center justify-content-center text-body text-decoration-none fw-medium">
+                <span class="d-inline-flex align-items-center justify-content-center overflow-hidden rounded-3 shadow-sm" style="width: 5rem; height: 5rem;">
+                    <AppLogoIcon style="width: 5rem; height: 5rem;" />
+                </span>
             </Link>
 
-            <div class="flex flex-col gap-6">
-                <Card class="rounded-xl">
-                    <CardHeader class="px-10 pb-0 pt-8 text-center">
-                        <CardTitle class="text-xl">{{ title }}</CardTitle>
-                        <CardDescription>
-                            {{ description }}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent class="px-10 py-8">
-                        <slot />
-                    </CardContent>
-                </Card>
+            <div class="card shadow-sm rounded-3">
+                <div class="card-header bg-transparent text-center border-0 pt-4 px-4 px-md-5">
+                    <h2 class="h5 mb-1">{{ title }}</h2>
+                    <p v-if="description" class="text-body-secondary small mb-0">{{ description }}</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <slot />
+                </div>
             </div>
         </div>
     </div>

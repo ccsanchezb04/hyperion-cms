@@ -1,31 +1,21 @@
 <script setup lang="ts">
-import { TransitionRoot } from '@headlessui/vue';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-
 import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem, type SharedData, type User } from '@/types';
+import { TransitionRoot } from '@headlessui/vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 
 interface Props {
     mustVerifyEmail: boolean;
     status?: string;
-    className?: string;
 }
 
 defineProps<Props>();
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profile settings',
-        href: '/settings/profile',
-    },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Profile settings', href: '/admin/settings/profile' }];
 
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
@@ -36,9 +26,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.patch(route('profile.update'), {
-        preserveScroll: true,
-    });
+    form.patch(route('profile.update'), { preserveScroll: true });
 };
 </script>
 
@@ -47,59 +35,63 @@ const submit = () => {
         <Head title="Profile settings" />
 
         <SettingsLayout>
-            <div class="flex flex-col space-y-6">
+            <div class="d-flex flex-column gap-4">
                 <HeadingSmall title="Profile information" description="Update your name and email address" />
 
-                <form @submit.prevent="submit" class="space-y-6">
-                    <div class="grid gap-2">
-                        <Label for="name">Name</Label>
-                        <Input id="name" class="mt-1 block w-full" v-model="form.name" required autocomplete="name" placeholder="Full name" />
-                        <InputError class="mt-2" :message="form.errors.name" />
+                <form @submit.prevent="submit" class="d-flex flex-column gap-3">
+                    <div>
+                        <label for="name" class="form-label">Name</label>
+                        <input
+                            id="name"
+                            v-model="form.name"
+                            type="text"
+                            class="form-control"
+                            :class="{ 'is-invalid': form.errors.name }"
+                            required
+                            autocomplete="name"
+                            placeholder="Full name"
+                        />
+                        <InputError :message="form.errors.name" />
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
-                        <Input
+                    <div>
+                        <label for="email" class="form-label">Email address</label>
+                        <input
                             id="email"
-                            type="email"
-                            class="mt-1 block w-full"
                             v-model="form.email"
+                            type="email"
+                            class="form-control"
+                            :class="{ 'is-invalid': form.errors.email }"
                             required
                             autocomplete="username"
                             placeholder="Email address"
                         />
-                        <InputError class="mt-2" :message="form.errors.email" />
+                        <InputError :message="form.errors.email" />
                     </div>
 
-                    <div v-if="mustVerifyEmail && !user.email_verified_at">
-                        <p class="mt-2 text-sm text-neutral-800">
+                    <div v-if="mustVerifyEmail && !user.email_verified_at" class="alert alert-warning py-2">
+                        <p class="small mb-2">
                             Your email address is unverified.
-                            <Link
-                                :href="route('verification.send')"
-                                method="post"
-                                as="button"
-                                class="focus:outline-hidden rounded-md text-sm text-neutral-600 underline hover:text-neutral-900 focus:ring-2 focus:ring-offset-2"
-                            >
+                            <Link :href="route('verification.send')" method="post" as="button" class="btn btn-link p-0 text-decoration-underline">
                                 Click here to re-send the verification email.
                             </Link>
                         </p>
-
-                        <div v-if="status === 'verification-link-sent'" class="mt-2 text-sm font-medium text-green-600">
+                        <div v-if="status === 'verification-link-sent'" class="small text-success fw-medium mb-0">
                             A new verification link has been sent to your email address.
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save</Button>
+                    <div class="d-flex align-items-center gap-3">
+                        <button type="submit" class="btn btn-primary" :disabled="form.processing">Save</button>
 
                         <TransitionRoot
                             :show="form.recentlySuccessful"
-                            enter="transition ease-in-out"
+                            enter="transition-opacity"
                             enter-from="opacity-0"
-                            leave="transition ease-in-out"
+                            leave="transition-opacity"
                             leave-to="opacity-0"
                         >
-                            <p class="text-sm text-neutral-600">Saved.</p>
+                            <p class="small text-body-secondary mb-0">Saved.</p>
                         </TransitionRoot>
                     </div>
                 </form>
@@ -109,3 +101,9 @@ const submit = () => {
         </SettingsLayout>
     </AppLayout>
 </template>
+
+<style scoped>
+.transition-opacity {
+    transition: opacity 0.2s ease-in-out;
+}
+</style>

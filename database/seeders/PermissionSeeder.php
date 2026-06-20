@@ -67,6 +67,24 @@ class PermissionSeeder extends Seeder
             ['name' => 'Use AI', 'slug' => 'use-ai'],
         ];
 
+        // Permisos de mensajes de contacto (sitio público)
+        $contactMessagePermissions = [
+            ['name' => 'View Contact Messages', 'slug' => 'view-contact-messages'],
+            ['name' => 'Delete Contact Messages', 'slug' => 'delete-contact-messages'],
+        ];
+
+        // Permisos de roles y permisos
+        $roleManagementPermissions = [
+            ['name' => 'Manage Roles', 'slug' => 'manage-roles'],
+            ['name' => 'View Permissions', 'slug' => 'view-permissions'],
+        ];
+
+        // Permisos de SEO (módulo /admin/seo y overrides per-content)
+        $seoPermissions = [
+            ['name' => 'Manage SEO', 'slug' => 'manage-seo'],
+            ['name' => 'Edit Content SEO', 'slug' => 'edit-content-seo'],
+        ];
+
         // Crear todos los permisos
         $allPermissions = [
             ...$contentPermissions,
@@ -76,6 +94,9 @@ class PermissionSeeder extends Seeder
             ...$menuPermissions,
             ...$settingsPermissions,
             ...$aiPermissions,
+            ...$contactMessagePermissions,
+            ...$roleManagementPermissions,
+            ...$seoPermissions,
         ];
 
         foreach ($allPermissions as $permission) {
@@ -99,7 +120,7 @@ class PermissionSeeder extends Seeder
             $adminRole->syncPermissions($allPermissionSlugs);
         }
 
-        // Editor tiene permisos de contenido, categorías, media y AI
+        // Editor tiene permisos de contenido, categorías, media, AI y mensajes
         if ($editorRole) {
             $editorPermissions = [
                 ...array_column($contentPermissions, 'slug'),
@@ -107,6 +128,8 @@ class PermissionSeeder extends Seeder
                 ...array_column($mediaPermissions, 'slug'),
                 'view-user',
                 'use-ai',
+                'view-contact-messages',
+                'edit-content-seo',
             ];
             $editorRole->syncPermissions($editorPermissions);
         }
@@ -120,6 +143,7 @@ class PermissionSeeder extends Seeder
                 'view-users',
                 'view-menu',
                 'view-settings',
+                'view-contact-messages',
             ];
             $viewerRole->syncPermissions($viewerPermissions);
         }

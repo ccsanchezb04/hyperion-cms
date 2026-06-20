@@ -9,19 +9,19 @@ defineProps<{
 </script>
 
 <template>
-    <div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
-        <div class="w-full max-w-sm">
-            <div class="flex flex-col gap-8">
-                <div class="flex flex-col items-center gap-4">
-                    <Link :href="route('home')" class="flex flex-col items-center gap-2 font-medium">
-                        <div class="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                            <AppLogoIcon class="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                        </div>
-                        <span class="sr-only">{{ title }}</span>
+    <div class="min-vh-100 d-flex flex-column align-items-center justify-content-center bg-body p-3 p-md-5">
+        <div class="w-100" style="max-width: 22rem;">
+            <div class="d-flex flex-column gap-4">
+                <div class="d-flex flex-column align-items-center gap-3">
+                    <Link :href="route('home')" class="d-flex flex-column align-items-center gap-2 text-body text-decoration-none fw-medium">
+                        <span class="d-inline-flex align-items-center justify-content-center overflow-hidden rounded-3 shadow-sm" style="width: 5rem; height: 5rem;">
+                            <AppLogoIcon style="width: 5rem; height: 5rem;" />
+                        </span>
+                        <span class="visually-hidden">{{ title }}</span>
                     </Link>
-                    <div class="space-y-2 text-center">
-                        <h1 class="text-xl font-medium">{{ title }}</h1>
-                        <p class="text-center text-sm text-muted-foreground">{{ description }}</p>
+                    <div class="text-center">
+                        <h1 class="h5 fw-medium mb-1">{{ title }}</h1>
+                        <p v-if="description" class="text-body-secondary small mb-0">{{ description }}</p>
                     </div>
                 </div>
                 <slot />

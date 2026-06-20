@@ -4,7 +4,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 const name = page.props.name;
-const quote = page.props.quote;
+const quote = page.props.quote as { message: string; author: string } | undefined;
 
 defineProps<{
     title?: string;
@@ -13,25 +13,24 @@ defineProps<{
 </script>
 
 <template>
-    <div class="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
-        <div class="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-            <div class="absolute inset-0 bg-zinc-900" />
-            <Link :href="route('home')" class="relative z-20 flex items-center text-lg font-medium">
-                <AppLogoIcon class="mr-2 size-8 fill-current text-white" />
+    <div class="vh-100 row g-0">
+        <div class="col-lg-6 d-none d-lg-flex flex-column p-4 p-lg-5 text-white position-relative" style="background-color: #18181b;">
+            <Link :href="route('home')" class="d-inline-flex align-items-center text-white text-decoration-none fw-medium fs-5 position-relative" style="z-index: 2;">
+                <AppLogoIcon class="me-2 rounded" style="width: 2rem; height: 2rem;" />
                 {{ name }}
             </Link>
-            <div v-if="quote" class="relative z-20 mt-auto">
-                <blockquote class="space-y-2">
-                    <p class="text-lg">&ldquo;{{ quote.message }}&rdquo;</p>
-                    <footer class="text-sm text-neutral-300">{{ quote.author }}</footer>
+            <div v-if="quote" class="mt-auto position-relative" style="z-index: 2;">
+                <blockquote class="d-flex flex-column gap-2 mb-0">
+                    <p class="fs-5 mb-0">&ldquo;{{ quote.message }}&rdquo;</p>
+                    <footer class="small text-body-secondary">{{ quote.author }}</footer>
                 </blockquote>
             </div>
         </div>
-        <div class="lg:p-8">
-            <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-                <div class="flex flex-col space-y-2 text-center">
-                    <h1 class="text-xl font-medium tracking-tight" v-if="title">{{ title }}</h1>
-                    <p class="text-sm text-muted-foreground" v-if="description">{{ description }}</p>
+        <div class="col-lg-6 d-flex align-items-center justify-content-center p-3 p-lg-5">
+            <div class="w-100" style="max-width: 22rem;">
+                <div class="text-center mb-4">
+                    <h1 v-if="title" class="h5 fw-medium mb-1">{{ title }}</h1>
+                    <p v-if="description" class="text-body-secondary small mb-0">{{ description }}</p>
                 </div>
                 <slot />
             </div>

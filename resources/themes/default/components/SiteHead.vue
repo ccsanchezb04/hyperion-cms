@@ -1,0 +1,63 @@
+<script setup lang="ts">
+import { Head } from '@inertiajs/vue3';
+
+interface SeoData {
+    title: string;
+    description: string;
+    keywords: string;
+    canonical: string;
+    robots: string;
+    locale: string;
+    og: {
+        title: string;
+        description: string;
+        image: string;
+        url: string;
+        type: string;
+        locale: string;
+        site_name: string;
+    };
+    twitter: {
+        card: string;
+        title: string;
+        description: string;
+        image: string;
+    };
+    json_ld: Record<string, unknown>[];
+}
+
+defineProps<{
+    seo: SeoData;
+}>();
+</script>
+
+<template>
+    <Head>
+        <title>{{ seo.title }}</title>
+        <meta name="description" :content="seo.description" />
+        <meta v-if="seo.keywords" name="keywords" :content="seo.keywords" />
+        <meta name="robots" :content="seo.robots" />
+        <link v-if="seo.canonical" rel="canonical" :href="seo.canonical" />
+
+        <meta property="og:title" :content="seo.og.title" />
+        <meta property="og:description" :content="seo.og.description" />
+        <meta v-if="seo.og.image" property="og:image" :content="seo.og.image" />
+        <meta v-if="seo.og.url" property="og:url" :content="seo.og.url" />
+        <meta property="og:type" :content="seo.og.type" />
+        <meta property="og:locale" :content="seo.og.locale" />
+        <meta property="og:site_name" :content="seo.og.site_name" />
+
+        <meta name="twitter:card" :content="seo.twitter.card" />
+        <meta name="twitter:title" :content="seo.twitter.title" />
+        <meta name="twitter:description" :content="seo.twitter.description" />
+        <meta v-if="seo.twitter.image" name="twitter:image" :content="seo.twitter.image" />
+    </Head>
+
+    <component
+        v-for="(block, i) in seo.json_ld"
+        :key="i"
+        is="script"
+        type="application/ld+json"
+        v-html="JSON.stringify(block)"
+    />
+</template>

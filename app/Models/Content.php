@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Content extends Model
@@ -74,13 +75,14 @@ class Content extends Model
     }
 
     /**
-     * Última versión activa.
+     * Última versión activa (singular). Usa hasOne+latestOfMany para que el
+     * Resource pueda acceder a $content->latestVersion->cove_dsbody en lugar
+     * de recibir una Collection.
      */
-    public function latestVersion(): HasMany
+    public function latestVersion(): HasOne
     {
-        return $this->hasMany(ContentVersion::class, 'cove_idcont', 'cont_idcont')
-                    ->orderByDesc('cove_nrvers')
-                    ->limit(1);
+        return $this->hasOne(ContentVersion::class, 'cove_idcont', 'cont_idcont')
+                    ->latestOfMany('cove_nrvers');
     }
 
     /**
@@ -104,6 +106,14 @@ class Content extends Model
     public function media(): MorphMany
     {
         return $this->morphMany(Media::class, 'mediable', 'medi_nmmdbl', 'medi_idmdbl');
+    }
+
+    /**
+     * Overrides SEO per-página (opcionales). 1:1.
+     */
+    public function seo(): HasOne
+    {
+        return $this->hasOne(ContentSeo::class, 'cose_idcont', 'cont_idcont');
     }
 
     // ─── Scopes ────────────────────────────────────────────────────────────

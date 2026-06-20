@@ -1,30 +1,22 @@
 <script setup lang="ts">
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { onMounted, ref } from 'vue';
-
 interface Props {
     variant?: 'header' | 'sidebar';
 }
 
 defineProps<Props>();
-
-const isOpen = ref(true);
-
-onMounted(() => {
-    isOpen.value = localStorage.getItem('sidebar') !== 'false';
-});
-
-const handleSidebarChange = (open: boolean) => {
-    isOpen.value = open;
-    localStorage.setItem('sidebar', String(open));
-};
 </script>
 
 <template>
-    <div v-if="variant === 'header'" class="flex min-h-screen w-full flex-col">
+    <div v-if="variant === 'header'" class="d-flex flex-column min-vh-100">
         <slot />
     </div>
-    <SidebarProvider v-else :default-open="isOpen" :open="isOpen" @update:open="handleSidebarChange">
+    <div v-else class="d-flex min-vh-100 app-shell">
         <slot />
-    </SidebarProvider>
+    </div>
 </template>
+
+<style scoped>
+.app-shell {
+    background-color: var(--bs-body-bg);
+}
+</style>

@@ -23,8 +23,30 @@ class ProfileUpdateRequest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
+                Rule::unique('hycms_users', 'user_dsemai')->ignore($this->user()->user_iduser, 'user_iduser'),
             ],
         ];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     */
+    public function attributes(): array
+    {
+        return [
+            'name' => 'name',
+            'email' => 'email',
+        ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'user_nmname' => $this->name,
+            'user_dsemai' => $this->email,
+        ]);
     }
 }

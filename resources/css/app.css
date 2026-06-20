@@ -1,10 +1,9 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
 
 body,
 html {
     font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    background-color: #ffffff;
-    color: #111827;
     min-height: 100%;
     margin: 0;
 }

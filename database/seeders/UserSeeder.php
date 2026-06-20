@@ -21,6 +21,7 @@ class UserSeeder extends Seeder
                 'user_nmname' => 'Super Administrator',
                 'user_cdpass' => Hash::make('admin123'),
                 'user_cdstat' => User::STATUS_ACTIVE,
+                'email_verified_at' => now(),
             ]
         );
 
@@ -37,6 +38,7 @@ class UserSeeder extends Seeder
                 'user_nmname' => 'Editor User',
                 'user_cdpass' => Hash::make('editor123'),
                 'user_cdstat' => User::STATUS_ACTIVE,
+                'email_verified_at' => now(),
             ]
         );
 
@@ -53,6 +55,7 @@ class UserSeeder extends Seeder
                 'user_nmname' => 'Viewer User',
                 'user_cdpass' => Hash::make('viewer123'),
                 'user_cdstat' => User::STATUS_ACTIVE,
+                'email_verified_at' => now(),
             ]
         );
 

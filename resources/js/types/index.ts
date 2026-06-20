@@ -14,6 +14,7 @@ export interface NavItem {
     href: string;
     icon?: LucideIcon;
     isActive?: boolean;
+    permission?: string;
 }
 
 export interface SharedData {
@@ -35,8 +36,11 @@ export interface User {
     email: string;
     avatar?: string;
     email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
+    /**
+     * Flat list of permission slugs the user holds. Contains the wildcard `'*'`
+     * for super-admins. Empty array for users without any explicit grants.
+     */
+    permissions: string[];
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

@@ -2,13 +2,15 @@ import { onMounted, ref } from 'vue';
 
 type Appearance = 'light' | 'dark' | 'system';
 
-export function updateTheme(value: Appearance) {
+function resolveTheme(value: Appearance): 'light' | 'dark' {
     if (value === 'system') {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.classList.toggle('dark', systemTheme === 'dark');
-    } else {
-        document.documentElement.classList.toggle('dark', value === 'dark');
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
+    return value;
+}
+
+export function updateTheme(value: Appearance) {
+    document.documentElement.setAttribute('data-bs-theme', resolveTheme(value));
 }
 
 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -19,11 +21,8 @@ const handleSystemThemeChange = () => {
 };
 
 export function initializeTheme() {
-    // Initialize theme from saved preference or default to system...
     const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
     updateTheme(savedAppearance || 'system');
-
-    // Set up system theme change listener...
     mediaQuery.addEventListener('change', handleSystemThemeChange);
 }
 

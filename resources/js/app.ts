@@ -2,13 +2,13 @@ import '../css/app.css';
 import 'bootstrap/dist/js/bootstrap.bundle';
 
 import { createInertiaApp } from '@inertiajs/vue3';
+import { createBootstrap } from 'bootstrap-vue-next';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { initializeTheme } from './composables/useAppearance';
 
-// Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
     interface ImportMetaEnv {
         readonly VITE_APP_NAME: string;
@@ -30,12 +30,12 @@ createInertiaApp({
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(createBootstrap())
             .mount(el);
     },
     progress: {
-        color: '#4B5563',
+        color: '#0d6efd',
     },
 });
 
-// This will set light / dark mode on page load...
 initializeTheme();

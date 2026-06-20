@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SiteContentService;
+use App\Services\ThemeManager;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -9,42 +11,95 @@ use Inertia\Middleware;
 class HandleInertiaRequests extends Middleware
 {
     /**
-     * The root template that's loaded on the first page visit.
-     *
-     * @see https://inertiajs.com/server-side-setup#root-template
-     *
-     * @var string
+     * Default root template (admin). Overridden per-request by rootView().
      */
     protected $rootView = 'app';
 
     /**
-     * Determines the current asset version.
-     *
-     * @see https://inertiajs.com/asset-versioning
+     * Pick the Blade root view per request:
+     *   /admin/*  → app.blade.php  (CMS admin bundle)
+     *   else      → site.blade.php (public site theme bundle)
      */
+    public function rootView(Request $request): string
+    {
+        return $this->isAdminRequest($request) ? 'app' : 'site';
+    }
+
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
     /**
-     * Define the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
-     *
      * @return array<string, mixed>
      */
     public function share(Request $request): array
     {
+        $base = parent::share($request);
+
+        if ($this->isAdminRequest($request)) {
+            return array_merge($base, $this->adminShared($request));
+        }
+
+        return array_merge($base, $this->siteShared($request));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function adminShared(Request $request): array
+    {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        return array_merge(parent::share($request), [
-            ...parent::share($request),
+        $user = $request->user();
+
+        return [
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? [
+                    'id' => $user->user_iduser,
+                    'name' => $user->user_nmname,
+                    'email' => $user->user_dsemai,
+                    'avatar' => $user->avatar ?? null,
+                    'email_verified_at' => $user->email_verified_at,
+                    'permissions' => $user->getPermissionSlugs(),
+                ] : null,
             ],
-        ]);
+            'flash' => [
+                'status' => fn () => $request->session()->get('status'),
+            ],
+        ];
+    }
+
+    /**
+     * Shared props for the public site. Intentionally minimal — no auth.user.
+     *
+     * @return array<string, mixed>
+     */
+    protected function siteShared(Request $request): array
+    {
+        $themes = app(ThemeManager::class);
+        $site = app(SiteContentService::class);
+
+        return [
+            'name' => config('app.name'),
+            'theme' => [
+                'slug' => $themes->activeSlug(),
+                'manifest' => $themes->manifest(),
+            ],
+            'site' => [
+                'settings' => $site->siteSettings(),
+                'menu' => $site->mainMenu(),
+            ],
+            'flash' => [
+                'contact_status' => fn () => $request->session()->get('contact_status'),
+            ],
+        ];
+    }
+
+    protected function isAdminRequest(Request $request): bool
+    {
+        return $request->is('admin', 'admin/*');
     }
 }
