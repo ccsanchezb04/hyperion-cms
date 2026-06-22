@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\Cache;
  * Genera sitemap.xml dinámico. Cacheado 1h; SiteCacheObserver invalida cuando
  * cambia un Content publicado.
  *
- * Incluye:
- *   - Home (/)
- *   - Índice de soluciones (/soluciones)
- *   - Cada Content publicado dentro de una categoría hija de 'soluciones'
+ * Incluye, por cada locale soportado:
+ *   - Home (/, /en)
+ *   - Índice de soluciones (/soluciones, /en/solutions)
+ *   - Cada Content publicado bajo 'soluciones' (con slug traducido cuando
+ *     existe; fallback al slug ES)
  *
  * Excluye: /admin/*, /api/*, drafts, testimonios, carousel.
  */
@@ -21,6 +22,8 @@ class SiteSitemapService
 {
     public const CACHE_KEY = 'hyperion:seo:sitemap';
     public const CACHE_TTL = 3600;
+
+    public function __construct(protected LocaleManager $locale) {}
 
     public function xml(): string
     {
@@ -43,21 +46,32 @@ class SiteSitemapService
 
         $urls = [];
 
-        $urls[] = $this->urlEntry($host . '/', null, '1.0', 'weekly');
-        $urls[] = $this->urlEntry($host . '/soluciones', null, '0.9', 'weekly');
+        // Home + índice por cada locale
+        foreach ($this->locale->supported() as $lang) {
+            $homePath = $this->localizedHomePath($lang);
+            $indexPath = $this->localizedIndexPath($lang);
+            $urls[] = $this->urlEntry($host . $homePath, null, '1.0', 'weekly');
+            $urls[] = $this->urlEntry($host . $indexPath, null, '0.9', 'weekly');
+        }
 
+        // Soluciones publicadas
         $solutions = Content::published()
+            ->with('translations')
             ->whereHas('categories.parent', fn ($q) => $q->where('cate_cdslug', 'soluciones'))
             ->orderBy('cont_dtupda', 'desc')
             ->get(['cont_idcont', 'cont_cdslug', 'cont_dtupda']);
 
         foreach ($solutions as $s) {
-            $urls[] = $this->urlEntry(
-                $host . '/soluciones/' . $s->cont_cdslug,
-                $s->cont_dtupda?->toAtomString(),
-                '0.8',
-                'monthly'
-            );
+            $lastmod = $s->cont_dtupda?->toAtomString();
+            foreach ($this->locale->supported() as $lang) {
+                $slug = $this->solutionSlugForLang($s, $lang);
+                $urls[] = $this->urlEntry(
+                    $host . $this->localizedSolutionPath($slug, $lang),
+                    $lastmod,
+                    '0.8',
+                    'monthly'
+                );
+            }
         }
 
         $body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -79,5 +93,34 @@ class SiteSitemapService
         $xml .= "    <priority>{$priority}</priority>\n";
         $xml .= "  </url>";
         return $xml;
+    }
+
+    protected function localizedHomePath(string $lang): string
+    {
+        return $lang === $this->locale->default() ? '/' : '/' . $lang;
+    }
+
+    protected function localizedIndexPath(string $lang): string
+    {
+        return $lang === $this->locale->default() ? '/soluciones' : '/' . $lang . '/solutions';
+    }
+
+    protected function localizedSolutionPath(string $slug, string $lang): string
+    {
+        return $lang === $this->locale->default()
+            ? '/soluciones/' . $slug
+            : '/' . $lang . '/solutions/' . $slug;
+    }
+
+    /**
+     * Slug de la solución en el idioma dado. Fallback al cont_cdslug ES.
+     */
+    protected function solutionSlugForLang(Content $content, string $lang): string
+    {
+        if ($lang === $this->locale->default()) {
+            return $content->cont_cdslug;
+        }
+        $t = $content->translations->firstWhere('cotr_cdlang', $lang);
+        return $t?->cotr_cdslug ?: $content->cont_cdslug;
     }
 }

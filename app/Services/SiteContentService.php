@@ -119,26 +119,26 @@ class SiteContentService
     public function solutionBySlug(string $slug): ?array
     {
         return $this->remember('solution:' . $slug, function () use ($slug) {
-            $content = Content::published()
-                ->with(['latestVersion', 'media', 'categories.parent', 'seo', 'translations'])
-                ->where('cont_cdslug', $slug)
-                ->whereHas('categories.parent', fn($q) => $q->where('cate_cdslug', 'soluciones'))
-                ->first();
+            $content = $this->findSolutionBySlug($slug);
 
             if (! $content) {
                 return null;
             }
 
             [$title, $body] = $this->localizedTitleAndBody($content);
+            $slugs = $this->slugsByLocale($content);
+            $currentLang = $this->locale->current();
 
             return [
                 'id' => $content->cont_idcont,
+                // slug = el del locale activo (lo usa el Vue para nav interna)
                 'title' => $title,
-                'slug' => $content->cont_cdslug,
+                'slug' => $slugs[$currentLang] ?? $content->cont_cdslug,
                 'body' => $body,
                 'image' => $this->primaryImageUrl($content),
                 'category' => $this->solutionCategorySlug($content),
                 'published_at' => $content->cont_dtpubl?->toDateTimeString(),
+                'slugs' => $slugs,
                 'seo_override' => $content->seo ? [
                     'meta_title'       => $content->seo->cose_nmtitl,
                     'meta_description' => $content->seo->cose_dsdesc,
@@ -148,6 +148,54 @@ class SiteContentService
                 ] : null,
             ];
         });
+    }
+
+    /**
+     * Resuelve un slug a su Content, locale-aware. Primero busca el slug en
+     * el idioma activo (vía ContentTranslation.cotr_cdslug), y cae al slug
+     * default (cont_cdslug). Así una visita a /en/solutions/life-insurance
+     * encuentra el content cuando cliente sembró cotr_cdslug='life-insurance'
+     * para lang='en'; y /en/solutions/seguro-de-vida sigue funcionando
+     * cuando no hay slug EN explícito (back-compat).
+     */
+    protected function findSolutionBySlug(string $slug): ?Content
+    {
+        $base = fn () => Content::published()
+            ->with(['latestVersion', 'media', 'categories.parent', 'seo', 'translations'])
+            ->whereHas('categories.parent', fn($q) => $q->where('cate_cdslug', 'soluciones'));
+
+        if (! $this->locale->isDefault()) {
+            $lang = $this->locale->current();
+            $byTranslation = $base()
+                ->whereHas('translations', fn ($q) => $q
+                    ->where('cotr_cdlang', $lang)
+                    ->where('cotr_cdslug', $slug)
+                )
+                ->first();
+            if ($byTranslation) {
+                return $byTranslation;
+            }
+        }
+
+        return $base()->where('cont_cdslug', $slug)->first();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function slugsByLocale(Content $content): array
+    {
+        $slugs = [$this->locale->default() => $content->cont_cdslug];
+        foreach ($content->translations as $t) {
+            $slugs[$t->cotr_cdlang] = $t->cotr_cdslug ?: $content->cont_cdslug;
+        }
+        // Asegurar que todos los idiomas soportados tengan un slug (fallback al default)
+        foreach ($this->locale->supported() as $lang) {
+            if (! isset($slugs[$lang])) {
+                $slugs[$lang] = $content->cont_cdslug;
+            }
+        }
+        return $slugs;
     }
 
     /**
@@ -227,17 +275,20 @@ class SiteContentService
         }
 
         $solutionsPrefix = $this->locale->isDefault() ? '/soluciones/' : '/' . $this->locale->current() . '/solutions/';
+        $currentLang = $this->locale->current();
 
         return $query->get()
-            ->map(function (Content $c) use ($solutionsPrefix) {
+            ->map(function (Content $c) use ($solutionsPrefix, $currentLang) {
                 [$title, $body] = $this->localizedTitleAndBody($c);
+                $slugs = $this->slugsByLocale($c);
+                $linkSlug = $slugs[$currentLang] ?? $c->cont_cdslug;
                 return [
                     'id'       => $c->cont_idcont,
                     'title'    => $title,
-                    'slug'     => $c->cont_cdslug,
+                    'slug'     => $linkSlug,
                     'body'     => $body,
                     'image'    => $this->primaryImageUrl($c),
-                    'href'     => $solutionsPrefix . $c->cont_cdslug,
+                    'href'     => $solutionsPrefix . $linkSlug,
                     'category' => $this->solutionCategorySlug($c),
                 ];
             })

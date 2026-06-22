@@ -16,6 +16,7 @@ class ContentTranslation extends Model
     protected $fillable = [
         'cotr_idcont',
         'cotr_cdlang',
+        'cotr_cdslug',
         'cotr_nmtitl',
         'cotr_dsbody',
     ];
@@ -24,6 +25,7 @@ class ContentTranslation extends Model
         'cotr_idcotr' => 'integer',
         'cotr_idcont' => 'integer',
         'cotr_cdlang' => 'string',
+        'cotr_cdslug' => 'string',
         'cotr_nmtitl' => 'string',
         'cotr_dsbody' => 'string',
         'cotr_dtcrea' => 'datetime',

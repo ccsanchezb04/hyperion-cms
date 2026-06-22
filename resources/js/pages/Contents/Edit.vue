@@ -16,6 +16,7 @@ interface ContentSeoForm {
 interface TranslationFields {
     title: string;
     body: string;
+    slug: string;
 }
 
 interface ContentDetail {
@@ -53,6 +54,7 @@ for (const lang of props.translatableLocales) {
     initialTranslations[lang] = {
         title: props.content.translations?.[lang]?.title ?? '',
         body:  props.content.translations?.[lang]?.body ?? '',
+        slug:  props.content.translations?.[lang]?.slug ?? '',
     };
 }
 
@@ -125,6 +127,17 @@ const translateWithAi = async (lang: string) => {
 };
 
 const canTranslate = computed(() => Boolean(form.title || form.body));
+
+const slugify = (s: string): string =>
+    s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+const onTranslationTitleInput = (lang: string) => {
+    // Auto-fill el slug del idioma cuando se edita el title, pero solo si
+    // el slug está vacío (no pisar ediciones manuales).
+    if (!form.translations[lang].slug && form.translations[lang].title) {
+        form.translations[lang].slug = slugify(form.translations[lang].title);
+    }
+};
 
 const generateSlug = () => {
     form.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -232,7 +245,31 @@ const previewDesc = computed(() =>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Title ({{ lang.toUpperCase() }})</label>
-                                    <input v-model="form.translations[lang].title" type="text" class="form-control" maxlength="255" />
+                                    <input
+                                        v-model="form.translations[lang].title"
+                                        type="text"
+                                        class="form-control"
+                                        maxlength="255"
+                                        @input="onTranslationTitleInput(lang)"
+                                    />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Slug ({{ lang.toUpperCase() }})</label>
+                                    <input
+                                        v-model="form.translations[lang].slug"
+                                        type="text"
+                                        class="form-control"
+                                        :class="{ 'is-invalid': form.errors[`translations.${lang}.slug`] }"
+                                        maxlength="200"
+                                        placeholder="/en/solutions/{este-slug}"
+                                    />
+                                    <div class="form-text">
+                                        Slug propio para este idioma (sólo a-z, 0-9 y guiones). Vacío =
+                                        usa el slug por defecto (Español).
+                                    </div>
+                                    <div v-if="form.errors[`translations.${lang}.slug`]" class="invalid-feedback d-block">
+                                        {{ form.errors[`translations.${lang}.slug`] }}
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Body ({{ lang.toUpperCase() }})</label>

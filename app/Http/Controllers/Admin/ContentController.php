@@ -290,7 +290,7 @@ class ContentController extends Controller
 
     /**
      * Reglas de validación para las traducciones. Cada locale traducible
-     * acepta title y body opcionales.
+     * acepta title, body y slug opcionales.
      *
      * @return array<string, array<int, mixed>>
      */
@@ -300,19 +300,23 @@ class ContentController extends Controller
             'translations' => ['nullable', 'array'],
         ];
         foreach ($this->translatableLocales() as $lang) {
-            $rules["translations.{$lang}"]          = ['nullable', 'array'];
-            $rules["translations.{$lang}.title"]    = ['nullable', 'string', 'max:255'];
-            $rules["translations.{$lang}.body"]     = ['nullable', 'string'];
+            $rules["translations.{$lang}"]       = ['nullable', 'array'];
+            $rules["translations.{$lang}.title"] = ['nullable', 'string', 'max:255'];
+            $rules["translations.{$lang}.body"]  = ['nullable', 'string'];
+            $rules["translations.{$lang}.slug"]  = [
+                'nullable', 'string', 'max:200',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+            ];
         }
         return $rules;
     }
 
     /**
-     * Persiste las traducciones. Si para un idioma ambos campos vienen
-     * vacíos, elimina la fila correspondiente (no contamina la tabla con
-     * registros placeholder).
+     * Persiste las traducciones. Si para un idioma TODOS los campos
+     * (title, body, slug) vienen vacíos, elimina la fila correspondiente
+     * (no contamina la tabla con placeholders).
      *
-     * @param array<string, array{title?: ?string, body?: ?string}> $payload
+     * @param array<string, array{title?: ?string, body?: ?string, slug?: ?string}> $payload
      */
     protected function saveTranslations(Content $content, array $payload): void
     {
@@ -320,8 +324,9 @@ class ContentController extends Controller
             $values = $payload[$lang] ?? [];
             $title = $values['title'] ?? null;
             $body = $values['body'] ?? null;
+            $slug = $values['slug'] ?? null;
 
-            if (empty($title) && empty($body)) {
+            if (empty($title) && empty($body) && empty($slug)) {
                 ContentTranslation::where('cotr_idcont', $content->cont_idcont)
                     ->where('cotr_cdlang', $lang)
                     ->delete();
@@ -330,13 +335,17 @@ class ContentController extends Controller
 
             ContentTranslation::updateOrCreate(
                 ['cotr_idcont' => $content->cont_idcont, 'cotr_cdlang' => $lang],
-                ['cotr_nmtitl' => $title, 'cotr_dsbody' => $body],
+                [
+                    'cotr_nmtitl' => $title,
+                    'cotr_dsbody' => $body,
+                    'cotr_cdslug' => $slug ?: null,
+                ],
             );
         }
     }
 
     /**
-     * @return array<string, array{title: string, body: string}>
+     * @return array<string, array{title: string, body: string, slug: string}>
      */
     protected function serializeTranslations(Content $content): array
     {
@@ -346,6 +355,7 @@ class ContentController extends Controller
             $result[$lang] = [
                 'title' => $t?->cotr_nmtitl ?? '',
                 'body'  => $t?->cotr_dsbody ?? '',
+                'slug'  => $t?->cotr_cdslug ?? '',
             ];
         }
         return $result;

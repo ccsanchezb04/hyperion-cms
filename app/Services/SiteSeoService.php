@@ -92,6 +92,7 @@ class SiteSeoService
      * @param array{
      *   id?: int, title: string, slug: string, body?: string, image?: ?string,
      *   category?: ?string,
+     *   slugs?: array<string, string>,
      *   seo_override?: ?array{
      *     meta_title?: ?string, meta_description?: ?string, og_image?: ?string,
      *     canonical?: ?string, noindex?: bool
@@ -102,6 +103,7 @@ class SiteSeoService
     {
         $override = $solution['seo_override'] ?? null;
         $categorySlug = $solution['category'] ?? null;
+        $slugs = $solution['slugs'] ?? [];
 
         // Title: override per-page > template aplicado al título del content
         $title = ! empty($override['meta_title'])
@@ -133,11 +135,12 @@ class SiteSeoService
             $ogImage = $this->getSetting('site.seo.og_image', 'seo');
         }
 
-        // Canonical: override per-page > URL absoluta calculada
-        $defaultPath = '/soluciones/' . $solution['slug'];
+        // Canonical: override per-page > URL absoluta con slug del locale activo
+        $currentLang = $this->locale->current();
+        $currentSlug = $slugs[$currentLang] ?? $solution['slug'];
         $url = ! empty($override['canonical'])
             ? $override['canonical']
-            : $this->absoluteUrl($this->localizedPath($defaultPath));
+            : $this->absoluteUrl($this->localizedSolutionPath($currentSlug, $currentLang));
 
         $overrides = [
             'title'       => $title,
@@ -155,10 +158,10 @@ class SiteSeoService
                 $this->breadcrumbSchema([
                     [$this->labelForCurrentLocale('Inicio', 'Home'), '/'],
                     [$this->labelForCurrentLocale('Soluciones', 'Solutions'), '/soluciones'],
-                    [$solution['title'], $defaultPath],
+                    [$solution['title'], '/soluciones/' . ($slugs[$this->locale->default()] ?? $solution['slug'])],
                 ]),
             ],
-            'alternates' => $this->alternatesFor($defaultPath),
+            'alternates' => $this->alternatesForSolution($slugs),
         ];
 
         // Override per-page de noindex pisa la política global
@@ -252,6 +255,49 @@ class SiteSeoService
     protected function localizedPath(string $defaultPath): string
     {
         return $this->locale->urlForLocale($this->locale->current(), $defaultPath);
+    }
+
+    /**
+     * Path absoluto de una solución para un locale específico, usando el slug
+     * traducido si existe. No depende de urlForLocale (que solo hace swap de
+     * segmento, no de slug).
+     */
+    protected function localizedSolutionPath(string $slug, string $lang): string
+    {
+        if ($lang === $this->locale->default()) {
+            return '/soluciones/' . $slug;
+        }
+        return '/' . $lang . '/solutions/' . $slug;
+    }
+
+    /**
+     * Hreflang alternates para una solución, usando el slug correspondiente
+     * a cada idioma (fallback al ES slug si no hay translation con slug
+     * propio).
+     *
+     * @param array<string, string> $slugs
+     * @return array<int, array{hreflang: string, href: string}>
+     */
+    protected function alternatesForSolution(array $slugs): array
+    {
+        $alternates = [];
+        $defaultSlug = $slugs[$this->locale->default()] ?? null;
+
+        foreach ($this->locale->supported() as $lang) {
+            $slug = $slugs[$lang] ?? $defaultSlug;
+            if (! $slug) continue;
+            $alternates[] = [
+                'hreflang' => $lang,
+                'href'     => $this->absoluteUrl($this->localizedSolutionPath($slug, $lang)),
+            ];
+        }
+        if ($defaultSlug) {
+            $alternates[] = [
+                'hreflang' => 'x-default',
+                'href'     => $this->absoluteUrl($this->localizedSolutionPath($defaultSlug, $this->locale->default())),
+            ];
+        }
+        return $alternates;
     }
 
     /**

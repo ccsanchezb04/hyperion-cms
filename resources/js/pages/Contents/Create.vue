@@ -22,9 +22,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Create Content', href: '/admin/contents/create' },
 ];
 
-const initialTranslations: Record<string, { title: string; body: string }> = {};
+const initialTranslations: Record<string, { title: string; body: string; slug: string }> = {};
 for (const lang of props.translatableLocales) {
-    initialTranslations[lang] = { title: '', body: '' };
+    initialTranslations[lang] = { title: '', body: '', slug: '' };
 }
 
 const form = useForm({
@@ -90,6 +90,15 @@ const translateWithAi = async (lang: string) => {
 };
 
 const canTranslate = computed(() => Boolean(form.title || form.body));
+
+const slugify = (s: string): string =>
+    s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+const onTranslationTitleInput = (lang: string) => {
+    if (!form.translations[lang].slug && form.translations[lang].title) {
+        form.translations[lang].slug = slugify(form.translations[lang].title);
+    }
+};
 
 const generateSlug = () => {
     form.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -195,7 +204,24 @@ const previewDesc = computed(() =>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Title ({{ lang.toUpperCase() }})</label>
-                                    <input v-model="form.translations[lang].title" type="text" class="form-control" maxlength="255" />
+                                    <input
+                                        v-model="form.translations[lang].title"
+                                        type="text"
+                                        class="form-control"
+                                        maxlength="255"
+                                        @input="onTranslationTitleInput(lang)"
+                                    />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Slug ({{ lang.toUpperCase() }})</label>
+                                    <input
+                                        v-model="form.translations[lang].slug"
+                                        type="text"
+                                        class="form-control"
+                                        maxlength="200"
+                                        placeholder="Auto desde el title"
+                                    />
+                                    <div class="form-text">Vacío = usa el slug por defecto (Español).</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Body ({{ lang.toUpperCase() }})</label>
