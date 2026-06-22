@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import CategoriesTab from './Tabs/Categories.vue';
 import ChromeTab from './Tabs/Chrome.vue';
 import GeneralTab from './Tabs/General.vue';
 import IntegrationsTab from './Tabs/Integrations.vue';
@@ -30,10 +31,16 @@ export interface SeoI18n {
     supported: string[];
 }
 
+export interface SolutionCategory {
+    slug: string;
+    name: string;
+}
+
 const props = defineProps<{
     settings: SeoSettings;
     meta: SeoMeta;
     i18n: SeoI18n;
+    solutionCategories: SolutionCategory[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -48,6 +55,7 @@ const tabs = [
     { id: 'sitemap', label: 'Sitemap', icon: 'diagram-3-fill' },
     { id: 'robots', label: 'Robots.txt', icon: 'robot' },
     { id: 'integrations', label: 'Integraciones', icon: 'plug-fill' },
+    { id: 'categories', label: 'Categorías OG (i18n)', icon: 'tags-fill' },
     { id: 'chrome', label: 'Chrome (i18n)', icon: 'translate' },
 ];
 
@@ -126,6 +134,7 @@ const switchLang = (lang: string) => {
                             <SitemapTab v-else-if="activeTab === 'sitemap'" :settings="settings" :meta="meta" />
                             <RobotsTab v-else-if="activeTab === 'robots'" :settings="settings" :meta="meta" :active-lang="i18n.active" />
                             <IntegrationsTab v-else-if="activeTab === 'integrations'" :settings="settings" :active-lang="i18n.active" />
+                            <CategoriesTab v-else-if="activeTab === 'categories'" :settings="settings" :active-lang="i18n.active" :categories="solutionCategories" />
                             <ChromeTab v-else-if="activeTab === 'chrome'" :settings="settings" :active-lang="i18n.active" />
                         </section>
                     </div>

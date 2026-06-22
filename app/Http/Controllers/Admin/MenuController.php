@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\Content;
 use App\Models\Menu;
 use App\Models\MenuItem;
+use App\Models\MenuItemTranslation;
+use App\Services\LocaleManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +21,9 @@ class MenuController extends Controller
 {
     public function index(): Response
     {
-        $menus = Menu::with(['items' => fn ($q) => $q->orderBy('mnit_nrorde')])->get()->map(function (Menu $m) {
+        $menus = Menu::with([
+            'items' => fn ($q) => $q->orderBy('mnit_nrorde')->with('translations'),
+        ])->get()->map(function (Menu $m) {
             return [
                 'id'    => $m->menu_idmenu,
                 'name'  => $m->menu_nmname,
@@ -33,6 +37,9 @@ class MenuController extends Controller
                     'ref_id'    => $it->mnit_idrefi,
                     'parent_id' => $it->mnit_idpare,
                     'order'     => $it->mnit_nrorde,
+                    'translations' => $it->translations
+                        ->mapWithKeys(fn ($t) => [$t->mitr_cdlang => $t->mitr_nmlabe])
+                        ->all(),
                 ])->all(),
             ];
         });
@@ -58,7 +65,19 @@ class MenuController extends Controller
             'menus' => $menus,
             'contents' => $contents,
             'categories' => $categories,
+            'translatableLocales' => $this->translatableLocales(),
         ]);
+    }
+
+    /**
+     * Idiomas traducibles del navbar = soportados menos default.
+     *
+     * @return array<int, string>
+     */
+    protected function translatableLocales(): array
+    {
+        $locale = app(LocaleManager::class);
+        return array_values(array_diff($locale->supported(), [$locale->default()]));
     }
 
     public function store(Request $request): RedirectResponse
@@ -92,7 +111,7 @@ class MenuController extends Controller
             ->where('mnit_idpare', $data['parent_id'] ?? null)
             ->max('mnit_nrorde');
 
-        MenuItem::create([
+        $item = MenuItem::create([
             'mnit_idmenu' => $menu->menu_idmenu,
             'mnit_nmlabe' => $data['title'],
             'mnit_cdtype' => $data['type'],
@@ -101,6 +120,8 @@ class MenuController extends Controller
             'mnit_idpare' => $data['parent_id'] ?? null,
             'mnit_nrorde' => $maxOrder + 1,
         ]);
+
+        $this->saveItemTranslations($item, $data['translations'] ?? []);
 
         return back()->with('success', 'Menu item added.');
     }
@@ -121,7 +142,32 @@ class MenuController extends Controller
             'mnit_idpare' => $data['parent_id'] ?? null,
         ]);
 
+        $this->saveItemTranslations($menuItem, $data['translations'] ?? []);
+
         return back()->with('success', 'Menu item updated.');
+    }
+
+    /**
+     * Upsert translations per language. Empty label deletes the row for that
+     * language (no contamina la tabla con placeholders).
+     *
+     * @param array<string, ?string> $payload  ['en' => 'Home', ...]
+     */
+    protected function saveItemTranslations(MenuItem $item, array $payload): void
+    {
+        foreach ($this->translatableLocales() as $lang) {
+            $label = $payload[$lang] ?? null;
+            if (empty($label)) {
+                MenuItemTranslation::where('mitr_idmnit', $item->mnit_idmnit)
+                    ->where('mitr_cdlang', $lang)
+                    ->delete();
+                continue;
+            }
+            MenuItemTranslation::updateOrCreate(
+                ['mitr_idmnit' => $item->mnit_idmnit, 'mitr_cdlang' => $lang],
+                ['mitr_nmlabe' => $label],
+            );
+        }
     }
 
     public function destroyItem(MenuItem $menuItem): RedirectResponse
@@ -194,17 +240,22 @@ class MenuController extends Controller
     }
 
     /**
-     * @return array{title:string,type:string,link:?string,ref_id:?int,parent_id:?int}
+     * @return array{title:string,type:string,link:?string,ref_id:?int,parent_id:?int,translations?:array<string,?string>}
      */
     protected function validateItem(Request $request, Menu $menu, ?MenuItem $editing = null): array
     {
-        $data = $request->validate([
-            'title'     => ['required', 'string', 'max:120'],
-            'type'      => ['required', Rule::in([MenuItem::TYPE_URL, MenuItem::TYPE_CONTENT, MenuItem::TYPE_CATEGORY])],
-            'link'      => ['nullable', 'string', 'max:255'],
-            'ref_id'    => ['nullable', 'integer'],
-            'parent_id' => ['nullable', 'integer'],
-        ]);
+        $rules = [
+            'title'        => ['required', 'string', 'max:120'],
+            'type'         => ['required', Rule::in([MenuItem::TYPE_URL, MenuItem::TYPE_CONTENT, MenuItem::TYPE_CATEGORY])],
+            'link'         => ['nullable', 'string', 'max:255'],
+            'ref_id'       => ['nullable', 'integer'],
+            'parent_id'    => ['nullable', 'integer'],
+            'translations' => ['nullable', 'array'],
+        ];
+        foreach ($this->translatableLocales() as $lang) {
+            $rules["translations.{$lang}"] = ['nullable', 'string', 'max:120'];
+        }
+        $data = $request->validate($rules);
 
         // type=url requiere link; type=content/category requiere ref_id
         if ($data['type'] === MenuItem::TYPE_URL && empty($data['link'])) {

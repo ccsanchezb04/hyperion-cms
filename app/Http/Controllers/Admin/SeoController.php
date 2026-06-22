@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateSeoSettingsRequest;
+use App\Models\Category;
 use App\Models\Setting;
 use App\Services\LocaleManager;
 use App\Services\SiteContentService;
@@ -60,7 +61,24 @@ class SeoController extends Controller
                 'default'   => $this->locale->default(),
                 'supported' => $this->locale->supported(),
             ],
+            'solutionCategories' => $this->solutionCategoriesList(),
         ]);
+    }
+
+    /**
+     * Categorías hijas de 'soluciones' como [slug => name]. La usa el tab
+     * Categories del admin para enumerar campos OG + description por
+     * categoría.
+     *
+     * @return array<int, array{slug: string, name: string}>
+     */
+    protected function solutionCategoriesList(): array
+    {
+        return Category::whereHas('parent', fn ($q) => $q->where('cate_cdslug', 'soluciones'))
+            ->orderBy('cate_nmname')
+            ->get(['cate_cdslug', 'cate_nmname'])
+            ->map(fn ($c) => ['slug' => $c->cate_cdslug, 'name' => $c->cate_nmname])
+            ->all();
     }
 
     public function update(UpdateSeoSettingsRequest $request): RedirectResponse

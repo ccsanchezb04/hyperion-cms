@@ -15,6 +15,7 @@ interface MenuItem {
     ref_id: number | null;
     parent_id: number | null;
     order: number;
+    translations: Record<string, string>;
 }
 
 interface Menu {
@@ -32,7 +33,17 @@ const props = defineProps<{
     menus: Menu[];
     contents: ContentOption[];
     categories: CategoryOption[];
+    translatableLocales: string[];
 }>();
+
+const localeLabels: Record<string, string> = { en: 'English', es: 'Español' };
+const localeFlags: Record<string, string> = { en: '🇬🇧', es: '🇪🇸' };
+
+const buildEmptyTranslations = (): Record<string, string> => {
+    const out: Record<string, string> = {};
+    for (const lang of props.translatableLocales) out[lang] = '';
+    return out;
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
@@ -110,17 +121,20 @@ const itemForm = useForm<{
     link: string;
     ref_id: number | null;
     parent_id: number | null;
+    translations: Record<string, string>;
 }>({
     title: '',
     type: 'url',
     link: '',
     ref_id: null,
     parent_id: null,
+    translations: buildEmptyTranslations(),
 });
 
 const openCreateItem = () => {
     editingItemId.value = null;
     itemForm.reset();
+    itemForm.translations = buildEmptyTranslations();
     itemForm.clearErrors();
     showItemModal.value = true;
 };
@@ -132,6 +146,11 @@ const openEditItem = (item: MenuItem) => {
     itemForm.link = item.link ?? '';
     itemForm.ref_id = item.ref_id;
     itemForm.parent_id = item.parent_id;
+    const fresh = buildEmptyTranslations();
+    for (const lang of props.translatableLocales) {
+        fresh[lang] = item.translations?.[lang] ?? '';
+    }
+    itemForm.translations = fresh;
     itemForm.clearErrors();
     showItemModal.value = true;
 };
@@ -448,6 +467,24 @@ const onTypeChange = () => {
                         </option>
                     </select>
                     <div v-if="itemForm.errors.parent_id" class="invalid-feedback d-block">{{ itemForm.errors.parent_id }}</div>
+                </div>
+
+                <div v-if="translatableLocales.length" class="border-top pt-3">
+                    <div class="text-body-secondary small mb-2 fw-semibold">
+                        <i class="bi bi-translate me-1"></i>Traducciones del label
+                    </div>
+                    <div v-for="lang in translatableLocales" :key="`tr-${lang}`" class="mb-2">
+                        <label class="form-label small mb-1">
+                            {{ localeFlags[lang] }} {{ localeLabels[lang] ?? lang.toUpperCase() }}
+                        </label>
+                        <input
+                            v-model="itemForm.translations[lang]"
+                            type="text"
+                            class="form-control form-control-sm"
+                            maxlength="120"
+                            placeholder="Vacío = usa el label por defecto (Español)"
+                        />
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">

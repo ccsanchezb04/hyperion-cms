@@ -26,7 +26,7 @@ class UpdateSeoSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tab'    => ['required', Rule::in(['general', 'og', 'schema', 'integrations', 'robots', 'chrome'])],
+            'tab'    => ['required', Rule::in(['general', 'og', 'schema', 'integrations', 'robots', 'chrome', 'categories'])],
             'values' => ['required', 'array'],
             'lang'   => ['nullable', 'string', 'in:es,en'],
         ];
@@ -96,8 +96,32 @@ class UpdateSeoSettingsRequest extends FormRequest
                 'site.footer.copy',
                 'site.footer.address',
             ],
+            'categories' => $this->categoryKeysWhitelist(),
             default => [],
         };
+    }
+
+    /**
+     * Keys permitidas para el tab Categories: site.seo.category.{slug}.description
+     * + site.seo.category.{slug}.og_image por cada categoría hija de
+     * 'soluciones'. Computa la lista en runtime desde la BD para que no
+     * haya que hardcodear los slugs.
+     *
+     * @return array<int, string>
+     */
+    protected function categoryKeysWhitelist(): array
+    {
+        $slugs = \App\Models\Category::whereHas(
+            'parent',
+            fn ($q) => $q->where('cate_cdslug', 'soluciones')
+        )->pluck('cate_cdslug')->all();
+
+        $keys = [];
+        foreach ($slugs as $slug) {
+            $keys[] = "site.seo.category.{$slug}.description";
+            $keys[] = "site.seo.category.{$slug}.og_image";
+        }
+        return $keys;
     }
 
     /**
@@ -106,11 +130,11 @@ class UpdateSeoSettingsRequest extends FormRequest
     public function settingGroup(): string
     {
         return match ($this->input('tab')) {
-            'general', 'og', 'robots' => 'seo',
-            'schema'                  => 'organization',
-            'integrations'            => 'integrations',
-            'chrome'                  => 'site',
-            default                   => 'seo',
+            'general', 'og', 'robots', 'categories' => 'seo',
+            'schema'                                => 'organization',
+            'integrations'                          => 'integrations',
+            'chrome'                                => 'site',
+            default                                 => 'seo',
         };
     }
 

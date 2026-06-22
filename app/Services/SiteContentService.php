@@ -91,10 +91,14 @@ class SiteContentService
                 return [];
             }
 
+            $currentLang = $this->locale->current();
+            $isDefault = $this->locale->isDefault();
+
             return $menu->rootItems()
+                ->with('translations')
                 ->get()
                 ->map(fn($item) => [
-                    'label' => $item->mnit_nmlabe,
+                    'label' => $isDefault ? $item->mnit_nmlabe : $item->labelFor($currentLang),
                     'href' => $item->mnit_cdtype === 'url'
                         ? ($item->mnit_dsurll ?? '#')
                         : $item->resolveUrl(),

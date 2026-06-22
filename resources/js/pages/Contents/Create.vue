@@ -3,7 +3,7 @@ import GoogleSnippet from '@/components/SeoPreviews/GoogleSnippet.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, reactive } from 'vue';
 
 interface CategoryOption {
     id: number;
@@ -46,6 +46,50 @@ const form = useForm({
 
 const localeLabels: Record<string, string> = { en: 'English', es: 'Español' };
 const localeFlags: Record<string, string> = { en: '🇬🇧', es: '🇪🇸' };
+
+// Estado per-language del botón "Traducir con AI"
+const aiTranslate = reactive<Record<string, { loading: boolean; error: string }>>({});
+for (const lang of props.translatableLocales) {
+    aiTranslate[lang] = { loading: false, error: '' };
+}
+
+const csrfToken = () =>
+    (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null)?.content ?? '';
+
+const translateWithAi = async (lang: string) => {
+    aiTranslate[lang].loading = true;
+    aiTranslate[lang].error = '';
+    try {
+        const res = await fetch('/admin/contents/translate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken(),
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                source_title: form.title,
+                source_body: form.body,
+                source_language: 'es',
+                target_language: lang,
+            }),
+        });
+        if (!res.ok) {
+            const errBody = await res.json().catch(() => ({}));
+            throw new Error(errBody.message ?? `HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        form.translations[lang].title = json.data?.title ?? form.translations[lang].title;
+        form.translations[lang].body = json.data?.body ?? form.translations[lang].body;
+    } catch (e: unknown) {
+        aiTranslate[lang].error = e instanceof Error ? e.message : 'Translation failed';
+    } finally {
+        aiTranslate[lang].loading = false;
+    }
+};
+
+const canTranslate = computed(() => Boolean(form.title || form.body));
 
 const generateSlug = () => {
     form.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -132,9 +176,23 @@ const previewDesc = computed(() =>
                             </p>
 
                             <div v-for="lang in translatableLocales" :key="`tr-${lang}`" class="mb-4 pb-3 border-bottom">
-                                <h3 class="h6 fw-semibold mb-3">
-                                    {{ localeFlags[lang] }} {{ localeLabels[lang] ?? lang.toUpperCase() }}
-                                </h3>
+                                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                    <h3 class="h6 fw-semibold mb-0">
+                                        {{ localeFlags[lang] }} {{ localeLabels[lang] ?? lang.toUpperCase() }}
+                                    </h3>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
+                                        :disabled="!canTranslate || aiTranslate[lang]?.loading"
+                                        @click="translateWithAi(lang)"
+                                    >
+                                        <i class="bi bi-magic"></i>
+                                        {{ aiTranslate[lang]?.loading ? 'Traduciendo...' : 'Traducir con AI' }}
+                                    </button>
+                                </div>
+                                <div v-if="aiTranslate[lang]?.error" class="alert alert-danger py-2 small mb-2">
+                                    {{ aiTranslate[lang].error }}
+                                </div>
                                 <div class="mb-3">
                                     <label class="form-label">Title ({{ lang.toUpperCase() }})</label>
                                     <input v-model="form.translations[lang].title" type="text" class="form-control" maxlength="255" />

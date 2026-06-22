@@ -76,6 +76,31 @@ class MenuItem extends Model
         return $this->children()->with('childrenRecursive');
     }
 
+    /**
+     * Traducciones del label (1:N — una por idioma soportado).
+     */
+    public function translations(): HasMany
+    {
+        return $this->hasMany(MenuItemTranslation::class, 'mitr_idmnit', 'mnit_idmnit');
+    }
+
+    /**
+     * Devuelve la traducción al idioma dado, o null si no existe.
+     */
+    public function translation(string $lang): ?MenuItemTranslation
+    {
+        return $this->translations->firstWhere('mitr_cdlang', $lang);
+    }
+
+    /**
+     * Label en el locale dado, con fallback al label default.
+     */
+    public function labelFor(string $lang): string
+    {
+        $t = $this->translation($lang);
+        return $t?->mitr_nmlabe ?: $this->mnit_nmlabe;
+    }
+
     // ─── Scopes ────────────────────────────────────────────────────────────
 
     public function scopeRoot($query)
