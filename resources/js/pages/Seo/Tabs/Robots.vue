@@ -3,10 +3,11 @@ import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import type { SeoMeta, SeoSettings } from '../Index.vue';
 
-const props = defineProps<{ settings: SeoSettings; meta: SeoMeta }>();
+const props = defineProps<{ settings: SeoSettings; meta: SeoMeta; activeLang?: string }>();
 
 const form = useForm({
     tab: 'robots',
+    lang: props.activeLang ?? 'es',
     values: {
         'site.seo.robots': props.settings.seo['site.seo.robots'] ?? 'noindex,nofollow',
     },

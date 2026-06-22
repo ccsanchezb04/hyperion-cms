@@ -4,10 +4,11 @@ import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import type { SeoSettings } from '../Index.vue';
 
-const props = defineProps<{ settings: SeoSettings }>();
+const props = defineProps<{ settings: SeoSettings; activeLang?: string }>();
 
 const form = useForm({
     tab: 'general',
+    lang: props.activeLang ?? 'es',
     values: {
         'site.seo.title_template': props.settings.seo['site.seo.title_template'] ?? '',
         'site.seo.description':    props.settings.seo['site.seo.description'] ?? '',

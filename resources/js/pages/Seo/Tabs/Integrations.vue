@@ -2,11 +2,12 @@
 import { useForm } from '@inertiajs/vue3';
 import type { SeoSettings } from '../Index.vue';
 
-const props = defineProps<{ settings: SeoSettings }>();
+const props = defineProps<{ settings: SeoSettings; activeLang?: string }>();
 const ints = props.settings.integrations;
 
 const form = useForm({
     tab: 'integrations',
+    lang: props.activeLang ?? 'es',
     values: {
         'site.integrations.gsc_verification':   ints['site.integrations.gsc_verification'] ?? '',
         'site.integrations.gtm_id':             ints['site.integrations.gtm_id'] ?? '',

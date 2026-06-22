@@ -5,10 +5,11 @@ import { router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import type { SeoSettings } from '../Index.vue';
 
-const props = defineProps<{ settings: SeoSettings }>();
+const props = defineProps<{ settings: SeoSettings; activeLang?: string }>();
 
 const form = useForm({
     tab: 'og',
+    lang: props.activeLang ?? 'es',
     values: {
         'site.seo.og_image':       props.settings.seo['site.seo.og_image'] ?? '',
         'site.seo.og_description': props.settings.seo['site.seo.og_description'] ?? '',

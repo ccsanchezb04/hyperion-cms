@@ -217,4 +217,165 @@ class SeoControllerTest extends TestCase
 
         $this->assertNull(Cache::get('hyperion:seo:sitemap'));
     }
+
+    public function test_index_exposes_i18n_state_with_default_locale(): void
+    {
+        $this->actingAs($this->admin)
+            ->get('/admin/seo')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('i18n.active', 'es')
+                ->where('i18n.default', 'es')
+                ->where('i18n.supported.0', 'es')
+                ->where('i18n.supported.1', 'en')
+                ->etc()
+            );
+    }
+
+    public function test_index_with_lang_query_activates_that_locale(): void
+    {
+        $this->actingAs($this->admin)
+            ->get('/admin/seo?lang=en')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('i18n.active', 'en')
+                ->etc()
+            );
+    }
+
+    public function test_index_with_unknown_lang_falls_back_to_default(): void
+    {
+        $this->actingAs($this->admin)
+            ->get('/admin/seo?lang=fr')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('i18n.active', 'es')
+                ->etc()
+            );
+    }
+
+    public function test_index_with_en_lang_shows_translated_settings_when_available(): void
+    {
+        Setting::setValue('site.seo.description', 'ES desc', 'seo');
+        Setting::setValue('site.seo.description', 'EN desc', 'seo', 'en');
+
+        // Las claves de settings contienen puntos (site.seo.description), así
+        // que AssertableInertia con dot-paths no las matchea. Inspeccionamos
+        // el array de la prop directamente.
+        $resp = $this->actingAs($this->admin)->get('/admin/seo?lang=en');
+        $resp->assertStatus(200);
+        $page = $this->extractInertiaPage($resp->getContent());
+        $this->assertSame('EN desc', $page['props']['settings']['seo']['site.seo.description']);
+
+        $resp = $this->actingAs($this->admin)->get('/admin/seo');
+        $page = $this->extractInertiaPage($resp->getContent());
+        $this->assertSame('ES desc', $page['props']['settings']['seo']['site.seo.description']);
+    }
+
+    /**
+     * Parsea el data-page de Inertia desde el HTML de respuesta.
+     *
+     * @return array<string, mixed>
+     */
+    protected function extractInertiaPage(string $html): array
+    {
+        preg_match('/data-page="([^"]+)"/', $html, $m);
+        return json_decode(html_entity_decode($m[1]), true);
+    }
+
+    public function test_update_with_lang_persists_translation_row(): void
+    {
+        $this->actingAs($this->admin)
+            ->from('/admin/seo')
+            ->put('/admin/seo', [
+                'tab'  => 'general',
+                'lang' => 'en',
+                'values' => ['site.seo.description' => 'Family, asset and business protection.'],
+            ]);
+
+        $this->assertDatabaseHas('hycms_settings', [
+            'sett_cdkeys' => 'site.seo.description',
+            'sett_cdlang' => 'en',
+            'sett_dsvalu' => 'Family, asset and business protection.',
+        ]);
+
+        // El default ES no se tocó
+        $defaultRow = Setting::where('sett_cdkeys', 'site.seo.description')
+            ->whereNull('sett_cdlang')
+            ->first();
+        $this->assertNotNull($defaultRow);
+        $this->assertNotSame('Family, asset and business protection.', $defaultRow->sett_dsvalu);
+    }
+
+    public function test_update_without_lang_persists_to_default(): void
+    {
+        $this->actingAs($this->admin)
+            ->from('/admin/seo')
+            ->put('/admin/seo', [
+                'tab'  => 'general',
+                'lang' => 'es',  // explicit default
+                'values' => ['site.seo.description' => 'Spanish updated'],
+            ]);
+
+        $this->assertDatabaseHas('hycms_settings', [
+            'sett_cdkeys' => 'site.seo.description',
+            'sett_cdlang' => null,
+            'sett_dsvalu' => 'Spanish updated',
+        ]);
+    }
+
+    public function test_chrome_tab_persists_site_group_settings(): void
+    {
+        $this->actingAs($this->admin)
+            ->from('/admin/seo')
+            ->put('/admin/seo', [
+                'tab'  => 'chrome',
+                'lang' => 'en',
+                'values' => [
+                    'site.heading'           => 'JuanFer Insurance',
+                    'site.solutions.heading' => 'Our Solutions',
+                    'site.footer.copy'       => '© 2025 JuanFer Insurance. All rights reserved.',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('hycms_settings', [
+            'sett_cdkeys' => 'site.heading',
+            'sett_cdlang' => 'en',
+            'sett_nmgrou' => 'site',
+            'sett_dsvalu' => 'JuanFer Insurance',
+        ]);
+        $this->assertDatabaseHas('hycms_settings', [
+            'sett_cdkeys' => 'site.solutions.heading',
+            'sett_cdlang' => 'en',
+            'sett_dsvalu' => 'Our Solutions',
+        ]);
+    }
+
+    public function test_chrome_tab_ignores_non_site_keys(): void
+    {
+        $beforeRobots = Setting::getValue('site.seo.robots');
+
+        $this->actingAs($this->admin)
+            ->from('/admin/seo')
+            ->put('/admin/seo', [
+                'tab'  => 'chrome',
+                'lang' => 'en',
+                'values' => [
+                    'site.heading'    => 'OK',
+                    'site.seo.robots' => 'index,follow',  // not in chrome whitelist
+                ],
+            ]);
+
+        $this->assertSame('OK', Setting::getValue('site.heading', null, 'en'));
+        $this->assertSame($beforeRobots, Setting::getValue('site.seo.robots'));
+    }
+
+    public function test_invalid_lang_rejected(): void
+    {
+        $this->actingAs($this->admin)
+            ->from('/admin/seo')
+            ->put('/admin/seo', [
+                'tab' => 'general',
+                'lang' => 'pwn',
+                'values' => ['site.seo.description' => 'x'],
+            ])
+            ->assertSessionHasErrors('lang');
+    }
 }

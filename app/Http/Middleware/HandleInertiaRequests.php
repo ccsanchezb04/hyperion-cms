@@ -82,6 +82,10 @@ class HandleInertiaRequests extends Middleware
         $themes = app(ThemeManager::class);
         $site = app(SiteContentService::class);
 
+        // settings y menu como closures: el route-level middleware SetLocale
+        // corre DESPUÉS de share(), así que evaluación eager devolvería
+        // siempre el locale por defecto. Lazy eval garantiza que cuando
+        // Inertia compone la respuesta final el locale ya está fijado.
         return [
             'name' => config('app.name'),
             'theme' => [
@@ -89,8 +93,8 @@ class HandleInertiaRequests extends Middleware
                 'manifest' => $themes->manifest(),
             ],
             'site' => [
-                'settings' => $site->siteSettings(),
-                'menu' => $site->mainMenu(),
+                'settings' => fn () => $site->siteSettings(),
+                'menu'     => fn () => $site->mainMenu(),
             ],
             'flash' => [
                 'contact_status' => fn () => $request->session()->get('contact_status'),

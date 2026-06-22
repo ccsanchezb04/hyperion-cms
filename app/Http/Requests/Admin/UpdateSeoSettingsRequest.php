@@ -26,8 +26,9 @@ class UpdateSeoSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tab'    => ['required', Rule::in(['general', 'og', 'schema', 'integrations', 'robots'])],
+            'tab'    => ['required', Rule::in(['general', 'og', 'schema', 'integrations', 'robots', 'chrome'])],
             'values' => ['required', 'array'],
+            'lang'   => ['nullable', 'string', 'in:es,en'],
         ];
     }
 
@@ -78,6 +79,23 @@ class UpdateSeoSettingsRequest extends FormRequest
             'robots' => [
                 'site.seo.robots',
             ],
+            'chrome' => [
+                'site.heading',
+                'site.tagline',
+                'site.about.heading',
+                'site.about.intro',
+                'site.about.vision_title',
+                'site.about.vision_lead',
+                'site.about.vision_body',
+                'site.about.mission_title',
+                'site.about.mission_body',
+                'site.solutions.heading',
+                'site.solutions.cta_all',
+                'site.testimonials.heading',
+                'site.contact.heading',
+                'site.footer.copy',
+                'site.footer.address',
+            ],
             default => [],
         };
     }
@@ -91,7 +109,17 @@ class UpdateSeoSettingsRequest extends FormRequest
             'general', 'og', 'robots' => 'seo',
             'schema'                  => 'organization',
             'integrations'            => 'integrations',
+            'chrome'                  => 'site',
             default                   => 'seo',
         };
+    }
+
+    /**
+     * Idioma de las settings a persistir. null = default (Spanish).
+     */
+    public function lang(): ?string
+    {
+        $lang = $this->input('lang');
+        return $lang === 'es' || $lang === null ? null : $lang;
     }
 }

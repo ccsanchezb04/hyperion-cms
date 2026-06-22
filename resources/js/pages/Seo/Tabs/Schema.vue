@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import type { SeoSettings } from '../Index.vue';
 
-const props = defineProps<{ settings: SeoSettings }>();
+const props = defineProps<{ settings: SeoSettings; activeLang?: string }>();
 const org = props.settings.organization;
 
 const form = useForm({
     tab: 'schema',
+    lang: props.activeLang ?? 'es',
     values: {
         'site.organization.name':                org['site.organization.name'] ?? '',
         'site.organization.legal_code':          org['site.organization.legal_code'] ?? '',
@@ -26,6 +28,24 @@ const form = useForm({
 });
 
 const save = () => form.put('/admin/seo', { preserveScroll: true });
+
+// Construye la query del mapa juntando los campos de dirección. Si todos
+// están vacíos no renderiza nada para no mostrar un iframe roto.
+const mapQuery = computed(() => {
+    const parts = [
+        form.values['site.organization.address.street'],
+        form.values['site.organization.address.locality'],
+        form.values['site.organization.address.region'],
+        form.values['site.organization.address.country'],
+    ].filter(Boolean);
+    return parts.join(', ');
+});
+
+const mapEmbedUrl = computed(() =>
+    mapQuery.value
+        ? `https://www.google.com/maps?q=${encodeURIComponent(mapQuery.value)}&output=embed`
+        : '',
+);
 </script>
 
 <template>
@@ -86,6 +106,23 @@ const save = () => form.put('/admin/seo', { preserveScroll: true });
             <div class="col-md-2 mb-3">
                 <label class="form-label">Código postal</label>
                 <input v-model="form.values['site.organization.address.postal_code']" type="text" class="form-control" />
+            </div>
+        </div>
+
+        <div v-if="mapEmbedUrl" class="mb-4">
+            <div class="text-body-secondary small mb-2">Preview en Google Maps:</div>
+            <div class="ratio ratio-16x9 border rounded overflow-hidden" style="max-height: 280px;">
+                <iframe
+                    :src="mapEmbedUrl"
+                    style="border: 0;"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="Mapa de la dirección"
+                ></iframe>
+            </div>
+            <div class="form-text">
+                Reactivo a los campos de dirección. Si la dirección no carga bien, ajusta los campos.
             </div>
         </div>
 
