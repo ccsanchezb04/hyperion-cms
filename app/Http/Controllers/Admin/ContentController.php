@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\TranslateContentFieldsRequest;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentSeo;
 use App\Models\ContentTranslation;
 use App\Models\ContentVersion;
 use App\Models\Setting;
+use App\Services\AITranslator;
 use App\Services\LocaleManager;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -159,6 +163,40 @@ class ContentController extends Controller
     {
         $content->delete();
         return redirect()->route('contents.index')->with('success', 'Content deleted successfully.');
+    }
+
+    /**
+     * Traduce title + body de un content al idioma destino vía AITranslator.
+     * No persiste nada; el FE recibe los textos y los inyecta en su form.
+     * Comparte la lógica con AIController::translate (mismo service).
+     */
+    public function translateFields(TranslateContentFieldsRequest $request, AITranslator $translator): JsonResponse
+    {
+        $validated = $request->validated();
+        $target = $validated['target_language'];
+        $source = $validated['source_language'] ?? 'auto';
+
+        try {
+            $title = ! empty($validated['source_title'])
+                ? $translator->translate($validated['source_title'], $target, $source)
+                : '';
+            $body = ! empty($validated['source_body'])
+                ? $translator->translate($validated['source_body'], $target, $source)
+                : '';
+
+            return response()->json([
+                'data' => [
+                    'title' => $title,
+                    'body'  => $body,
+                    'target_language' => $target,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Content translate failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to translate: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function publish(Content $content): RedirectResponse

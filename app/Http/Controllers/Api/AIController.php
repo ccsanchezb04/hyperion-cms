@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AI\GenerateContentRequest;
 use App\Http\Requests\AI\GenerateSeoRequest;
 use App\Http\Requests\AI\TranslateRequest;
+use App\Services\AITranslator;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
@@ -90,18 +91,14 @@ class AIController extends Controller
     /**
      * Translate content using AI.
      */
-    public function translate(TranslateRequest $request): JsonResponse
+    public function translate(TranslateRequest $request, AITranslator $translator): JsonResponse
     {
         $content = $request->input('content');
         $targetLanguage = $request->input('target_language');
         $sourceLanguage = $request->input('source_language', 'auto');
 
         try {
-            if ($this->aiProvider === 'openai' && $this->apiKey) {
-                $translatedContent = $this->translateWithOpenAI($content, $targetLanguage, $sourceLanguage);
-            } else {
-                $translatedContent = $this->simulateTranslation($content, $targetLanguage, $sourceLanguage);
-            }
+            $translatedContent = $translator->translate($content, $targetLanguage, $sourceLanguage);
 
             return response()->json([
                 'data' => [

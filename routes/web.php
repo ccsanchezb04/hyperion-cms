@@ -24,6 +24,9 @@ Route::prefix('admin')->group(function () {
             Route::get('/',            [ContentController::class, 'index'])->name('index');
             Route::get('/create',      [ContentController::class, 'create'])->name('create');
             Route::post('/',           [ContentController::class, 'store'])->name('store');
+            Route::post('/translate',  [ContentController::class, 'translateFields'])
+                ->middleware('permission:use-ai')
+                ->name('translate');
             Route::get('/{content}/edit', [ContentController::class, 'edit'])->name('edit');
             Route::put('/{content}',   [ContentController::class, 'update'])->name('update');
             Route::delete('/{content}', [ContentController::class, 'destroy'])->name('destroy');
