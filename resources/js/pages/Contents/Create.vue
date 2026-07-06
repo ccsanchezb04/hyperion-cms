@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MediaPicker from '@/components/MediaPicker.vue';
 import GoogleSnippet from '@/components/SeoPreviews/GoogleSnippet.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -10,10 +11,16 @@ interface CategoryOption {
     name: string;
 }
 
+interface MediaOption {
+    id: number;
+    url: string;
+}
+
 const props = defineProps<{
     categories: CategoryOption[];
     canonicalHost?: string;
     translatableLocales: string[];
+    availableMedia: MediaOption[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -34,6 +41,7 @@ const form = useForm({
     status: 'draft',
     body: '',
     categories: [] as number[],
+    media_ids: [] as number[],
     seo: {
         meta_title: '',
         meta_description: '',
@@ -172,6 +180,11 @@ const previewDesc = computed(() =>
                                     <label :for="`cat-${category.id}`" class="form-check-label">{{ category.name }}</label>
                                 </div>
                             </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Imágenes</label>
+                            <MediaPicker :available-media="availableMedia" v-model="form.media_ids" />
                         </div>
 
                         <details v-if="translatableLocales.length" class="border rounded-3 p-3 mt-2">

@@ -116,6 +116,42 @@ class SiteContentService
         return $this->remember('settings', fn() => Setting::getGroup('site', $lang));
     }
 
+    public function organizationSettings(): array
+    {
+        $lang = $this->locale->current();
+        return $this->remember('org-settings', fn() => Setting::getGroup('organization', $lang));
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string, logo: ?string, url: ?string}>
+     */
+    public function allies(?int $limit = null): array
+    {
+        return $this->remember(
+            'allies:' . ($limit ?? 'all'),
+            function () use ($limit) {
+                $query = Content::published()
+                    ->with(['media'])
+                    ->whereHas('categories', fn ($q) => $q->where('cate_cdslug', 'aliados'))
+                    ->orderBy('cont_dtcrea');
+
+                if ($limit !== null) {
+                    $query->limit($limit);
+                }
+
+                return $query->get()
+                    ->map(fn (Content $c) => [
+                        'id'   => $c->cont_idcont,
+                        'name' => $c->cont_nmtitl,
+                        'logo' => $this->primaryImageUrl($c),
+                        // El body del content puede contener la URL externa del aliado
+                        'url'  => null,
+                    ])
+                    ->all();
+            }
+        );
+    }
+
     public function solutionBySlug(string $slug): ?array
     {
         return $this->remember('solution:' . $slug, function () use ($slug) {
@@ -136,6 +172,14 @@ class SiteContentService
                 'slug' => $slugs[$currentLang] ?? $content->cont_cdslug,
                 'body' => $body,
                 'image' => $this->primaryImageUrl($content),
+                'media' => $content->media
+                    ->filter(fn($m) => $m->isImage())
+                    ->map(fn($m) => [
+                        'url' => Storage::url($m->medi_dspath),
+                        'alt' => $content->cont_nmtitl,
+                    ])
+                    ->values()
+                    ->all(),
                 'category' => $this->solutionCategorySlug($content),
                 'published_at' => $content->cont_dtpubl?->toDateTimeString(),
                 'slugs' => $slugs,

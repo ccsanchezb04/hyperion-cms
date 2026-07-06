@@ -2,6 +2,7 @@
 import { useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useSite } from '../composables/useSite';
+import SocialLinks from './SocialLinks.vue';
 
 const { setting } = useSite();
 
@@ -24,16 +25,17 @@ const submit = () => {
 </script>
 
 <template>
-    <section id="contacto" class="jf-dark-bg py-5">
+    <section id="contacto" class="bg-white py-5">
         <div class="container">
             <h2 class="text-center my-4 jf-heading">
                 {{ setting('site.contact.heading', 'Estamos más cerca de ti') }}
             </h2>
             <div class="row">
-                <div class="col-lg-6">
-                    <div class="bg-white text-black w-100 h-100 d-flex align-items-center justify-content-center p-4">
-                        {{ setting('site.contact.social_placeholder', 'Aquí van las redes sociales') }}
-                    </div>
+                <div class="col-lg-6 d-flex flex-column justify-content-center gap-3 py-3">
+                    <p class="text-muted mb-0 fw-semibold">
+                        {{ setting('site.contact.social_text', 'Síguenos en nuestras redes sociales') }}
+                    </p>
+                    <SocialLinks variant="grid" />
                 </div>
                 <div class="col-lg-6">
                     <div v-if="sent" class="alert alert-success" role="alert">

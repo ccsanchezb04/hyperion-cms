@@ -19,10 +19,11 @@ class HomeController extends Controller
     public function __invoke(): Response
     {
         return Inertia::render('Home', [
-            'solutions' => $this->site->solutions(3),
+            'solutions'    => $this->site->solutions(),
             'testimonials' => $this->site->testimonials(6),
-            'carousel' => $this->site->carousel(),
-            'seo' => $this->seo->forHome(),
+            'carousel'     => $this->site->carousel(),
+            'allies'       => $this->site->allies(),
+            'seo'          => $this->seo->forHome(),
         ]);
     }
 }

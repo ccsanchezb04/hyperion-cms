@@ -32,67 +32,179 @@ use Illuminate\Support\Facades\File;
  */
 class SiteSeeder extends Seeder
 {
-    /**
-     * Catálogo central de las 6 categorías de soluciones del cliente. Una sola
-     * fuente de verdad para slug, nombre, OG image, meta description y mock de
-     * contenido seed.
-     */
-    protected const SOLUTION_CATEGORIES = [
-        [
-            'slug'         => 'salud',
-            'name'         => 'Salud',
-            'description'  => 'Cuidamos tu salud y el bienestar de los tuyos.',
-            'og_file'      => 'JF_Salud.png',
-            'content_slug' => 'seguro-de-salud',
-            'content_title' => 'Seguro de Salud',
-            'content_body' => 'Cobertura integral en salud para ti y tu familia, con red médica de calidad y atención oportuna.',
-        ],
-        [
-            'slug'         => 'vida',
-            'name'         => 'Vida',
-            'description'  => 'Protegemos tu autonomía, tus ingresos y el futuro de tu familia.',
-            'og_file'      => 'JF_Vida.png',
-            'content_slug' => 'seguro-de-vida',
-            'content_title' => 'Seguro de Vida',
-            'content_body' => 'Protege a tus seres queridos con nuestro seguro de vida integral.',
-        ],
-        [
-            'slug'         => 'movilidad',
-            'name'         => 'Movilidad',
-            'description'  => 'Te acompañamos en cada camino, seguro y sin preocupaciones.',
-            'og_file'      => 'JF_Movilidad.png',
-            'content_slug' => 'seguro-de-movilidad',
-            'content_title' => 'Seguro de Movilidad',
-            'content_body' => 'Mantén tu vehículo protegido con nuestra cobertura completa para auto y moto.',
-        ],
-        [
-            'slug'         => 'hogar',
-            'name'         => 'Hogar',
-            'description'  => 'Protegemos tu lugar seguro, cuidamos tus bienes y patrimonio.',
-            'og_file'      => 'JF_Hogar.png',
-            'content_slug' => 'seguro-de-hogar',
-            'content_title' => 'Seguro de Hogar',
-            'content_body' => 'Asegura tu hogar contra imprevistos con nuestra póliza especializada.',
-        ],
-        [
-            'slug'         => 'empresas',
-            'name'         => 'Empresas',
-            'description'  => 'Impulsamos tu crecimiento, protegemos tu inversión, cuidamos tu equipo humano.',
-            'og_file'      => 'JF_Empresas.png',
-            'content_slug' => 'seguros-empresariales',
-            'content_title' => 'Seguros Empresariales',
-            'content_body' => 'Soluciones empresariales a medida: pólizas multirriesgo, RC, vida grupo y más.',
-        ],
-        [
-            'slug'         => 'rentas',
-            'name'         => 'Rentas',
-            'description'  => 'Brindamos tranquilidad financiera para asegurar tu futuro.',
-            'og_file'      => 'JF_Rentas.png',
-            'content_slug' => 'plan-de-rentas',
-            'content_title' => 'Plan de Rentas',
-            'content_body' => 'Planea tu futuro con instrumentos de rentas vitalicias y ahorro programado.',
-        ],
-    ];
+    protected function solutionCategories(): array
+    {
+        return [
+            [
+                'slug'          => 'salud',
+                'name'          => 'Salud',
+                'description'   => 'Cuidamos tu salud y el bienestar de los tuyos.',
+                'og_file'       => 'JF_Salud.png',
+                'content_slug'  => 'seguro-de-salud',
+                'content_title' => 'Seguro de Salud',
+                'content_body'  => <<<HTML
+<div class="jf-portfolio">
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Sura</h2>
+    <ul class="jf-portfolio__products">
+      <li>Pólizas de salud</li>
+      <li>Salud Modular</li>
+      <li>Salud Para Todos Integral</li>
+      <li>Pac 60+</li>
+      <li>Salud Para Dos</li>
+      <li>Póliza de Enfermedades Graves</li>
+    </ul>
+  </div>
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Seguros Bolívar</h2>
+    <ul class="jf-portfolio__products">
+      <li>Seguro médico internacional</li>
+      <li>Salud para disfrutar</li>
+      <li>Salud Integral</li>
+      <li>Salud a su medida</li>
+    </ul>
+  </div>
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Axa Colpatria</h2>
+    <ul class="jf-portfolio__products">
+      <li>Planes de salud premium</li>
+      <li>Planes de salud livianos</li>
+      <li>Plan International Care</li>
+    </ul>
+  </div>
+</div>
+HTML,
+            ],
+            [
+                'slug'          => 'vida',
+                'name'          => 'Vida',
+                'description'   => 'Protegemos tu autonomía, tus ingresos y el futuro de tu familia.',
+                'og_file'       => 'JF_Vida.png',
+                'content_slug'  => 'seguro-de-vida',
+                'content_title' => 'Seguro de Vida',
+                'content_body'  => <<<HTML
+<div class="jf-portfolio">
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Sura</h2>
+    <ul class="jf-portfolio__products">
+      <li>Plan Vive</li>
+      <li>Plan Crédito Protegido</li>
+      <li>Responsabilidad Civil para profesionales</li>
+    </ul>
+  </div>
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Seguros Bolívar</h2>
+    <ul class="jf-portfolio__products">
+      <li>Seguro Vida familiar</li>
+      <li>Seguro Vida Deudor</li>
+    </ul>
+  </div>
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Axa Colpatria</h2>
+    <ul class="jf-portfolio__products">
+      <li>Vida a mi medida</li>
+      <li>Vida a mi medida deudor</li>
+    </ul>
+  </div>
+</div>
+HTML,
+            ],
+            [
+                'slug'          => 'movilidad',
+                'name'          => 'Movilidad',
+                'description'   => 'Te acompañamos en cada camino, seguro y sin preocupaciones.',
+                'og_file'       => 'JF_Movilidad.png',
+                'content_slug'  => 'seguro-de-movilidad',
+                'content_title' => 'Seguro de Movilidad',
+                'content_body'  => <<<HTML
+<div class="jf-portfolio">
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Productos disponibles</h2>
+    <ul class="jf-portfolio__products">
+      <li>Seguro autos</li>
+      <li>Seguro utilitarios y pesados</li>
+      <li>Seguro motos</li>
+      <li>Seguro bicicletas y patinetas</li>
+      <li>Seguro Taxis (Axa)</li>
+      <li>Asistencia en Viaje</li>
+    </ul>
+  </div>
+</div>
+HTML,
+            ],
+            [
+                'slug'          => 'hogar',
+                'name'          => 'Hogar',
+                'description'   => 'Protegemos tu lugar seguro, cuidamos tus bienes y patrimonio.',
+                'og_file'       => 'JF_Hogar.png',
+                'content_slug'  => 'seguro-de-hogar',
+                'content_title' => 'Seguro de Hogar',
+                'content_body'  => <<<HTML
+<div class="jf-portfolio">
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Productos disponibles</h2>
+    <ul class="jf-portfolio__products">
+      <li>Seguro de hogar</li>
+      <li>Seguro de arrendamiento</li>
+      <li>Responsabilidad Civil Familiar</li>
+      <li>Cobertura de ciberseguridad</li>
+    </ul>
+  </div>
+</div>
+HTML,
+            ],
+            [
+                'slug'          => 'empresas',
+                'name'          => 'Empresas',
+                'description'   => 'Impulsamos tu crecimiento, protegemos tu inversión, cuidamos tu equipo humano.',
+                'og_file'       => 'JF_Empresas.png',
+                'content_slug'  => 'seguros-empresariales',
+                'content_title' => 'Seguros Empresariales',
+                'content_body'  => <<<HTML
+<div class="jf-portfolio">
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Productos disponibles</h2>
+    <ul class="jf-portfolio__products jf-portfolio__products--cols">
+      <li>Seguro Todo Riesgo: bienes y patrimonio</li>
+      <li>Clínicas y Hospitales</li>
+      <li>Hoteles</li>
+      <li>Instituciones Educativas</li>
+      <li>Seguro de Transporte</li>
+      <li>Cumplimiento</li>
+      <li>Responsabilidad Civil</li>
+      <li>Salud colectiva</li>
+      <li>Vida Grupo</li>
+      <li>Hogar colectiva</li>
+      <li>Autos colectiva</li>
+      <li>Fraude de empleados</li>
+      <li>Sostenibilidad legal</li>
+      <li>Protección Digital</li>
+    </ul>
+  </div>
+</div>
+HTML,
+            ],
+            [
+                'slug'          => 'rentas',
+                'name'          => 'Rentas',
+                'description'   => 'Brindamos tranquilidad financiera para asegurar tu futuro.',
+                'og_file'       => 'JF_Rentas.png',
+                'content_slug'  => 'plan-de-rentas',
+                'content_title' => 'Plan de Rentas',
+                'content_body'  => <<<HTML
+<div class="jf-portfolio">
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Productos disponibles</h2>
+    <ul class="jf-portfolio__products">
+      <li>Seguro de educación</li>
+      <li>Seguro de pensión (brecha pensional)</li>
+    </ul>
+  </div>
+</div>
+HTML,
+            ],
+        ];
+    }
 
     public function run(): void
     {
@@ -116,7 +228,7 @@ class SiteSeeder extends Seeder
         );
 
         // 6 categorías hijas
-        foreach (self::SOLUTION_CATEGORIES as $cat) {
+        foreach ($this->solutionCategories() as $cat) {
             Category::updateOrCreate(
                 ['cate_cdslug' => $cat['slug']],
                 ['cate_nmname' => $cat['name'], 'cate_idpare' => $parent->cate_idcate]
@@ -131,6 +243,11 @@ class SiteSeeder extends Seeder
         Category::firstOrCreate(
             ['cate_cdslug' => 'carousel'],
             ['cate_nmname' => 'Carrusel', 'cate_idpare' => null]
+        );
+
+        Category::firstOrCreate(
+            ['cate_cdslug' => 'aliados'],
+            ['cate_nmname' => 'Aliados', 'cate_idpare' => null]
         );
     }
 
@@ -202,7 +319,7 @@ class SiteSeeder extends Seeder
         }
 
         // OG image + meta description por categoría (6 cliente-provistas)
-        foreach (self::SOLUTION_CATEGORIES as $cat) {
+        foreach ($this->solutionCategories() as $cat) {
             Setting::setValue(
                 "site.seo.category.{$cat['slug']}.description",
                 $cat['description'],
@@ -259,10 +376,11 @@ class SiteSeeder extends Seeder
 
         $items = [
             ['Inicio',      '#',             1],
-            ['Soluciones',  '#soluciones',    2],
+            ['Soluciones',  '#soluciones',   2],
             ['Nosotros',    '#nosotros',     3],
             ['Testimonios', '#testimonios',  4],
-            ['Contacto',    '#contacto',     5],
+            ['Aliados',     '#aliados',      5],
+            ['Contacto',    '#contacto',     6],
         ];
 
         foreach ($items as [$label, $url, $order]) {
@@ -295,9 +413,10 @@ class SiteSeeder extends Seeder
         $category = Category::where('cate_cdslug', 'carousel')->first();
 
         $slides = [
-            ['slug' => 'carousel-slide-1', 'title' => 'Slide 1', 'file' => 'first-img.jpg'],
-            ['slug' => 'carousel-slide-2', 'title' => 'Slide 2', 'file' => 'second-img.jpg'],
-            ['slug' => 'carousel-slide-3', 'title' => 'Slide 3', 'file' => 'third-img.jpg'],
+            ['slug' => 'carousel-slide-1', 'title' => 'Slide 1', 'file' => 'JF_banner1.png'],
+            ['slug' => 'carousel-slide-2', 'title' => 'Slide 2', 'file' => 'JF_banner2.png'],
+            ['slug' => 'carousel-slide-3', 'title' => 'Slide 3', 'file' => 'JF_banner3.png'],
+            ['slug' => 'carousel-slide-4', 'title' => 'Slide 4', 'file' => 'JF_banner4.png'],
         ];
 
         foreach ($slides as $idx => $slide) {
@@ -305,7 +424,7 @@ class SiteSeeder extends Seeder
             $relPath = $relativeDir . '/' . $slide['file'];
             $absPath = storage_path('app/public/' . $relPath);
 
-            if (File::exists($src) && ! File::exists($absPath)) {
+            if (File::exists($src)) {
                 File::copy($src, $absPath);
             }
 
@@ -331,7 +450,7 @@ class SiteSeeder extends Seeder
                 ],
                 [
                     'medi_dspath' => $relPath,
-                    'medi_cdtype' => 'image/jpeg',
+                    'medi_cdtype' => 'image/png',
                     'medi_idusby' => $admin?->user_iduser,
                 ]
             );
@@ -353,7 +472,7 @@ class SiteSeeder extends Seeder
             File::makeDirectory($solutionsDir, 0755, true);
         }
 
-        foreach (self::SOLUTION_CATEGORIES as $idx => $cat) {
+        foreach ($this->solutionCategories() as $idx => $cat) {
             $category = Category::where('cate_cdslug', $cat['slug'])->first();
             if (! $category) {
                 continue;
@@ -380,10 +499,19 @@ class SiteSeeder extends Seeder
                 ]
             );
 
-            ContentVersion::updateOrCreate(
-                ['cove_idcont' => $content->cont_idcont, 'cove_nrvers' => 1],
-                ['cove_dsbody' => $cat['content_body']]
-            );
+            $latestVersion = ContentVersion::where('cove_idcont', $content->cont_idcont)
+                ->orderByDesc('cove_nrvers')
+                ->first();
+
+            if ($latestVersion) {
+                $latestVersion->update(['cove_dsbody' => $cat['content_body']]);
+            } else {
+                ContentVersion::create([
+                    'cove_idcont' => $content->cont_idcont,
+                    'cove_nrvers' => 1,
+                    'cove_dsbody' => $cat['content_body'],
+                ]);
+            }
 
             $content->categories()->syncWithoutDetaching([$category->cate_idcate]);
 
@@ -456,7 +584,7 @@ class SiteSeeder extends Seeder
         }
 
         // OG por categoría
-        foreach (self::SOLUTION_CATEGORIES as $cat) {
+        foreach ($this->solutionCategories() as $cat) {
             $src = $this->clientAssetPath($cat['og_file']);
             $dst = "{$targetDir}/og-{$cat['slug']}.jpg";
             if ($src && File::exists($src) && ! File::exists($dst)) {

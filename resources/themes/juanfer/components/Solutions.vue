@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
 import type { SiteSolution } from '../composables/useSite';
 import { useSite } from '../composables/useSite';
-import SolutionCard from './SolutionCard.vue';
+import SolutionCategoryCard from './SolutionCategoryCard.vue';
 
 defineProps<{
     items: SiteSolution[];
@@ -12,30 +11,19 @@ const { setting } = useSite();
 </script>
 
 <template>
-    <section id="soluciones" class="py-5">
+    <section id="soluciones" class="bg-white py-5">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <h2 class="text-center my-4 jf-heading">
-                        {{ setting('site.solutions.heading', 'Nuestras Soluciones') }}
-                    </h2>
-                </div>
-            </div>
-            <div class="row">
-                <div v-for="s in items" :key="s.slug" class="col-lg-4 mb-4">
-                    <SolutionCard
-                        :image="s.image"
+            <h2 class="text-center mb-5 jf-heading">
+                {{ setting('site.solutions.heading', 'Nuestras Soluciones') }}
+            </h2>
+            <div class="row g-4">
+                <div v-for="s in items" :key="s.slug" class="col-12 col-sm-6 col-lg-4">
+                    <SolutionCategoryCard
                         :title="s.title"
-                        :description="s.body"
+                        :category="s.category"
                         :href="s.href"
+                        :image="s.image"
                     />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">
-                    <Link href="/soluciones" class="jf-btn jf-btn--secondary float-end my-4">
-                        {{ setting('site.solutions.cta_all', 'Ver todas las soluciones') }}
-                    </Link>
                 </div>
             </div>
         </div>

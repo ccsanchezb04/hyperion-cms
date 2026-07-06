@@ -21,8 +21,6 @@ const alternates = computed<SeoAlternate[]>(() => {
 });
 
 const current = computed<string>(() => {
-    // El html lang está seteado via og:locale (es_CO/en_US). El path actual
-    // determina qué link está activo. Si empieza con /en, es 'en'; sino 'es'.
     const path = typeof window !== 'undefined' ? window.location.pathname : '';
     if (path === '/en' || path.startsWith('/en/')) return 'en';
     return 'es';
@@ -50,21 +48,25 @@ const isCurrent = (lang: string) => lang === current.value;
 <style scoped>
 .jf-langswitch__btn {
     padding: 0.15rem 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--jf-text, #6c757d);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
     border-radius: 0.25rem;
     transition: background 0.15s, color 0.15s;
+    letter-spacing: 0.03em;
 }
+
 .jf-langswitch__btn:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--jf-primary, #0066cc);
-}
-.jf-langswitch__btn--active {
-    background: var(--jf-primary, #0066cc);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
 }
+
+.jf-langswitch__btn--active {
+    background: var(--jf-secondary, #2f71b3);
+    color: #fff;
+}
+
 .jf-langswitch__btn--active:hover {
     color: #fff;
 }

@@ -8,6 +8,7 @@ export interface SiteMenuItem {
 
 export interface SiteSharedProps {
     settings: Record<string, string>;
+    organization: Record<string, string>;
     menu: SiteMenuItem[];
 }
 
@@ -18,6 +19,7 @@ export interface SiteSolution {
     body: string;
     image: string | null;
     href: string;
+    category: string | null;
 }
 
 export interface SiteTestimonial {
@@ -52,6 +54,13 @@ export interface SiteSeoAlternate {
     href: string;
 }
 
+export interface SiteAlly {
+    id: number;
+    name: string;
+    logo: string | null;
+    url: string | null;
+}
+
 export interface SiteSeoData {
     title: string;
     description: string;
@@ -66,16 +75,18 @@ export interface SiteSeoData {
 }
 
 /**
- * Acceso tipado a las props compartidas del sitio (settings + menú principal).
+ * Acceso tipado a las props compartidas del sitio (settings + organización + menú).
  * Disponible en cualquier componente del tema.
  */
 export function useSite() {
     const page = usePage<{ site: SiteSharedProps }>();
 
     const settings = computed<Record<string, string>>(() => page.props.site?.settings ?? {});
+    const organization = computed<Record<string, string>>(() => page.props.site?.organization ?? {});
     const menu = computed<SiteMenuItem[]>(() => page.props.site?.menu ?? []);
 
     const setting = (key: string, fallback = ''): string => settings.value[key] ?? fallback;
+    const orgSetting = (key: string, fallback = ''): string => organization.value[key] ?? fallback;
 
-    return { settings, menu, setting };
+    return { settings, organization, menu, setting, orgSetting };
 }

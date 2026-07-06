@@ -9,6 +9,7 @@ use App\Models\Content;
 use App\Models\ContentSeo;
 use App\Models\ContentTranslation;
 use App\Models\ContentVersion;
+use App\Models\Media;
 use App\Models\Setting;
 use App\Services\AITranslator;
 use App\Services\LocaleManager;
@@ -62,9 +63,10 @@ class ContentController extends Controller
     public function create(): Response
     {
         return Inertia::render('Contents/Create', [
-            'categories'       => $this->categoriesForSelect(),
-            'canonicalHost'    => Setting::getValue('site.seo.canonical_host', ''),
+            'categories'          => $this->categoriesForSelect(),
+            'canonicalHost'       => Setting::getValue('site.seo.canonical_host', ''),
             'translatableLocales' => $this->translatableLocales(),
+            'availableMedia'      => $this->availableMedia(),
         ]);
     }
 
@@ -97,13 +99,14 @@ class ContentController extends Controller
 
         $this->saveSeo($content, $validated['seo'] ?? []);
         $this->saveTranslations($content, $validated['translations'] ?? []);
+        $this->syncMedia($content, $validated['media_ids'] ?? []);
 
         return redirect()->route('contents.index')->with('success', 'Content created successfully.');
     }
 
     public function edit(Content $content): Response
     {
-        $content->load(['categories', 'latestVersion', 'seo', 'translations']);
+        $content->load(['categories', 'latestVersion', 'seo', 'translations', 'media']);
 
         return Inertia::render('Contents/Edit', [
             'content' => [
@@ -116,10 +119,12 @@ class ContentController extends Controller
                 'categories'   => $content->categories->pluck('cate_idcate')->all(),
                 'seo'          => $this->serializeSeo($content->seo),
                 'translations' => $this->serializeTranslations($content),
+                'mediaIds'     => $content->media->pluck('medi_idmedi')->all(),
             ],
             'categories'          => $this->categoriesForSelect(),
             'canonicalHost'       => Setting::getValue('site.seo.canonical_host', ''),
             'translatableLocales' => $this->translatableLocales(),
+            'availableMedia'      => $this->availableMedia(),
         ]);
     }
 
@@ -155,6 +160,7 @@ class ContentController extends Controller
 
         $this->saveSeo($content, $validated['seo'] ?? []);
         $this->saveTranslations($content, $validated['translations'] ?? []);
+        $this->syncMedia($content, $validated['media_ids'] ?? []);
 
         return redirect()->route('contents.index')->with('success', 'Content updated successfully.');
     }
@@ -223,6 +229,8 @@ class ContentController extends Controller
             'body'         => ['nullable', 'string'],
             'categories'   => ['nullable', 'array'],
             'categories.*' => ['integer', 'exists:hycms_categories,cate_idcate'],
+            'media_ids'    => ['nullable', 'array'],
+            'media_ids.*'  => ['integer', 'exists:hycms_media,medi_idmedi'],
         ];
     }
 
@@ -379,5 +387,43 @@ class ContentController extends Controller
             'id'   => $c->cate_idcate,
             'name' => $c->cate_nmname,
         ])->all();
+    }
+
+    /**
+     * Asocia/desasocia imágenes al content actualizando los campos morph
+     * directamente en hycms_media. Primero desvincula las imágenes anteriores
+     * de este content, luego vincula las seleccionadas.
+     *
+     * @param array<int, int> $mediaIds
+     */
+    private function syncMedia(Content $content, array $mediaIds): void
+    {
+        Media::where('medi_nmmdbl', Content::class)
+             ->where('medi_idmdbl', $content->cont_idcont)
+             ->update(['medi_nmmdbl' => null, 'medi_idmdbl' => null]);
+
+        if (! empty($mediaIds)) {
+            Media::whereIn('medi_idmedi', $mediaIds)->update([
+                'medi_nmmdbl' => Content::class,
+                'medi_idmdbl' => $content->cont_idcont,
+            ]);
+        }
+    }
+
+    /**
+     * Todas las imágenes de la biblioteca disponibles para asociar a un content.
+     *
+     * @return array<int, array{id: int, url: string}>
+     */
+    private function availableMedia(): array
+    {
+        return Media::where('medi_cdtype', 'like', 'image/%')
+            ->orderByDesc('medi_dtcrea')
+            ->get()
+            ->map(fn (Media $m) => [
+                'id'  => $m->medi_idmedi,
+                'url' => asset('storage/' . $m->medi_dspath),
+            ])
+            ->all();
     }
 }

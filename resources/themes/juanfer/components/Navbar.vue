@@ -1,13 +1,27 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue';
+import logoSrc from '../assets/images/logos/logo_isotipo-05.png';
 import { useSite } from '../composables/useSite';
-import LanguageSwitcher from './LanguageSwitcher.vue';
 
 const { menu } = useSite();
+
+const scrolled = ref(false);
+
+const onScroll = () => {
+    scrolled.value = window.scrollY > 10;
+};
+
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }));
+onUnmounted(() => window.removeEventListener('scroll', onScroll));
 </script>
 
 <template>
-    <nav class="jf-navbar navbar jf-dark-bg navbar-expand-lg">
+    <nav class="jf-navbar navbar jf-dark-bg navbar-expand-lg sticky-top">
         <div class="container">
+            <a class="navbar-brand p-0 jf-navbar-brand" :class="{ 'jf-navbar-brand--visible': scrolled }" href="/">
+                <img :src="logoSrc" alt="JuanFer Seguros" class="jf-navbar-logo" />
+            </a>
+
             <button
                 class="navbar-toggler"
                 type="button"
@@ -20,16 +34,33 @@ const { menu } = useSite();
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse justify-content-center" id="jfNavbarNav">
+            <div class="collapse navbar-collapse" id="jfNavbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li v-for="item in menu" :key="item.label" class="nav-item">
                         <a class="nav-link" :href="item.href">{{ item.label }}</a>
                     </li>
                 </ul>
-                <div class="ms-auto">
-                    <LanguageSwitcher />
-                </div>
             </div>
         </div>
     </nav>
 </template>
+
+<style scoped>
+.jf-navbar-brand {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+.jf-navbar-brand--visible {
+    opacity: 1;
+    width: auto;
+}
+
+.jf-navbar-logo {
+    height: 44px;
+    width: auto;
+    display: block;
+}
+</style>

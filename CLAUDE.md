@@ -82,9 +82,11 @@ This project does NOT use Laravel defaults. Every table, primary key, timestamp,
 
 ### Inertia bridge
 
-- `HandleInertiaRequests` shares `auth.user` and `name` (app name) globally. Add new global props here.
-- The `app` blade view (`resources/views/app.blade.php`) is the root template.
-- Vue page resolution: page name `Contents/Index` → `resources/js/pages/Contents/Index.vue`. Add new admin screens by creating both the Inertia route in `routes/web.php` and the page file.
+- `HandleInertiaRequests::rootView()` returns `app` for `/admin/*` and `site` for all other paths. The admin and public site are two separate Inertia applications sharing the same middleware.
+- Admin shared props live in `adminShared()`: `auth.user` (with `permissions` array), `name`, `quote`, `flash.status`.
+- Public site shared props live in `siteShared()`: `site.settings`, `site.menu`, `theme`, `flash.contact_status`. These must be **lazy closures** (not eager values) because `SetLocale` middleware runs after `share()` — a prop returned as a plain value would always use the default locale.
+- Vue page resolution for admin: `Contents/Index` → `resources/js/pages/Contents/Index.vue`.
+- Vue page resolution for public site: resolved from the active theme directory (see Theme system below).
 
 ### Frontend layout
 
@@ -93,6 +95,51 @@ This project does NOT use Laravel defaults. Every table, primary key, timestamp,
 - `resources/js/layouts/` holds `AppLayout.vue` (admin shell) and `AuthLayout.vue`, plus per-section layout folders.
 - `resources/js/composables/` has shared composables (e.g. `useAppearance` for theme).
 - Vite dev server is locked to `127.0.0.1:5173` with `strictPort: true` — don't change the port unless you also update HMR config.
+
+### Public site layer
+
+- `routes/site.php` (required from `routes/web.php`) defines the public-facing routes: `/` (home), `/soluciones[/{slug}]`, `/contact`, `/sitemap.xml`, `/robots.txt`, and their `/en/*` mirrors.
+- Public controllers are in `App\Http\Controllers\Site\` and render theme pages via `Inertia::render('Home')`, `Inertia::render('Solutions/Index')`, etc. — the theme's active page directory is resolved at render time.
+- `App\Services\SiteContentService` is the query layer for public pages. It returns flat arrays ready for Inertia props. All queries are cached with versioned keys (`hyperion:site:vN:lang:suffix`). Call `SiteContentService::flush()` to bust all public cache — this is done automatically by `SiteCacheObserver` on every `saved`/`deleted`/`restored` event for Content, Setting, Menu, etc.
+- `App\Services\SiteSeoService` and `App\Services\SiteSitemapService` follow the same versioned-cache pattern.
+
+### Theme system
+
+- Each public-facing theme lives in `resources/themes/{slug}/` and declares a `theme.json` manifest (`slug`, `name`, `version`, `entry`, `sections`).
+- Required files per theme: `theme.json`, `site.entry.ts` (Vite entry, boots its own Inertia+Vue instance), `layouts/SiteLayout.vue`, `pages/Home.vue`, `pages/Solutions/Index.vue`, `pages/Solutions/Show.vue`.
+- `vite.config.ts` auto-discovers theme entries via `discoverThemeEntries()` at build time — adding a new theme directory is enough; no manual Vite config changes needed.
+- Active theme is resolved by `App\Services\ThemeManager::activeSlug()`: DB setting `active_theme` (group `system`) → `config('hyperion.theme')` / env `HYPERION_THEME` → first discovered theme alphabetically.
+- Theme styles must be self-contained — never import admin CSS (Bootstrap/Tailwind/Radix) from a theme entry. Use a theme-specific class prefix (e.g. `.jf-*`) to avoid collisions.
+- Switch theme via `/admin/themes` (requires permission `manage-settings`) or `ThemeManager::setActive($slug)`.
+
+### Multi-language (i18n)
+
+- Supported locales: `es` (default, no URL prefix) and `en` (URL prefix `/en`). Managed by `App\Services\LocaleManager` (singleton).
+- The `locale:en` middleware alias (`App\Http\Middleware\SetLocale`) sets the active locale for a request. **Always add this middleware to non-default locale route groups**, not individual routes.
+- To add a new locale: (1) add it to `LocaleManager::SUPPORTED`, (2) add a route group with the right prefix and `locale:{lang}` middleware in `routes/site.php`, (3) seed translations for Content and Settings.
+- Content translations: `ContentTranslation` model (`hycms_content_translations`, prefix `cotr_`). Fields: `cotr_cdlang`, `cotr_cdslug`, `cotr_nmtitl`, `cotr_dsbody`. Access via `$content->translation($lang)` (requires eager-loading `translations`).
+- Menu item translations: `MenuItemTranslation` model (`hycms_menu_item_translations`, prefix `mitr_`). Access via `$menuItem->labelFor($lang)`.
+- Setting translations: `Setting::getValue($key, $default, $lang)` and `Setting::getGroup($group, $lang)` merge locale-specific rows over the default (null-lang) rows.
+
+### Content and versioning
+
+- `Content` model (`hycms_contents`, prefix `cont_`) stores metadata only. Body lives in `ContentVersion` (`hycms_content_versions`, prefix `cove_`).
+- `Content::latestVersion()` is a `hasOne` + `latestOfMany('cove_nrvers')` — use it for single-record access (`$content->latestVersion->cove_dsbody`). `Content::versions()` gives the full ordered history.
+- Content types: `Content::TYPE_POST`, `TYPE_PAGE`, `TYPE_CUSTOM`. Statuses: `STATUS_DRAFT`, `STATUS_PUBLISHED`, `STATUS_ARCHIVED`.
+- Per-content SEO overrides: `ContentSeo` model (`hycms_content_seo`, prefix `cose_`) via `$content->seo`. Fields: `cose_nmtitl`, `cose_dsdesc`, `cose_dsogim`, `cose_cdcano`, `cose_bonoix`.
+
+### Settings model
+
+- `Setting::getValue($key, $default, $lang)` — fetches a single value, locale-aware.
+- `Setting::setValue($key, $value, $group, $lang)` — upserts a value; `$lang = null` means the default (language-neutral) row.
+- `Setting::getGroup($group, $lang)` — returns `['key' => 'value']` array for a group, merging locale translations over defaults.
+- Standard groups: `general`, `seo`, `media`, `mail`, `site`, `organization`, `integrations`.
+
+### AI translation
+
+- `App\Services\AITranslator` translates text via OpenAI (or falls back to a `[Translated to X]` stub when unconfigured).
+- Configure via: `services.ai.provider` (default `openai`), `services.ai.api_key`, `services.ai.endpoint`.
+- The service is shared by `AIController` (Sanctum API) and the admin `ContentController` (session auth) to avoid duplicating HTTP logic.
 
 ### Testing
 

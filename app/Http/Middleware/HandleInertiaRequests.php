@@ -93,8 +93,9 @@ class HandleInertiaRequests extends Middleware
                 'manifest' => $themes->manifest(),
             ],
             'site' => [
-                'settings' => fn () => $site->siteSettings(),
-                'menu'     => fn () => $site->mainMenu(),
+                'settings'     => fn () => $site->siteSettings(),
+                'organization' => fn () => $site->organizationSettings(),
+                'menu'         => fn () => $site->mainMenu(),
             ],
             'flash' => [
                 'contact_status' => fn () => $request->session()->get('contact_status'),
