@@ -48,11 +48,10 @@ class SiteSeeder extends Seeder
     <h2 class="jf-portfolio__insurer-name">Sura</h2>
     <ul class="jf-portfolio__products">
       <li>Pólizas de salud</li>
-      <li>Salud Modular</li>
-      <li>Salud Para Todos Integral</li>
+      <li>Salud modular</li>
+      <li>Salud para todos integral</li>
+      <li>Salud para dos</li>
       <li>Pac 60+</li>
-      <li>Salud Para Dos</li>
-      <li>Póliza de Enfermedades Graves</li>
     </ul>
   </div>
   <div class="jf-portfolio__insurer">
@@ -69,7 +68,7 @@ class SiteSeeder extends Seeder
     <ul class="jf-portfolio__products">
       <li>Planes de salud premium</li>
       <li>Planes de salud livianos</li>
-      <li>Plan International Care</li>
+      <li>Plan international care</li>
     </ul>
   </div>
 </div>
@@ -87,16 +86,18 @@ HTML,
   <div class="jf-portfolio__insurer">
     <h2 class="jf-portfolio__insurer-name">Sura</h2>
     <ul class="jf-portfolio__products">
-      <li>Plan Vive</li>
-      <li>Plan Crédito Protegido</li>
-      <li>Responsabilidad Civil para profesionales</li>
+      <li>Plan vive</li>
+      <li>Plan crédito protegido</li>
+      <li>Póliza de enfermedades graves</li>
     </ul>
   </div>
   <div class="jf-portfolio__insurer">
     <h2 class="jf-portfolio__insurer-name">Seguros Bolívar</h2>
     <ul class="jf-portfolio__products">
-      <li>Seguro Vida familiar</li>
-      <li>Seguro Vida Deudor</li>
+      <li>Seguro vida individual y familiar</li>
+      <li>Seguro vida deudor</li>
+      <li>Seguro de accidentes personales</li>
+      <li>Seguro para mascotas</li>
     </ul>
   </div>
   <div class="jf-portfolio__insurer">
@@ -119,14 +120,36 @@ HTML,
                 'content_body'  => <<<HTML
 <div class="jf-portfolio">
   <div class="jf-portfolio__insurer">
-    <h2 class="jf-portfolio__insurer-name">Productos disponibles</h2>
+    <h2 class="jf-portfolio__insurer-name">Sura</h2>
     <ul class="jf-portfolio__products">
       <li>Seguro autos</li>
       <li>Seguro utilitarios y pesados</li>
       <li>Seguro motos</li>
       <li>Seguro bicicletas y patinetas</li>
-      <li>Seguro Taxis (Axa)</li>
-      <li>Asistencia en Viaje</li>
+      <li>Seguro de viaje</li>
+    </ul>
+  </div>
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Seguros Bolívar</h2>
+    <ul class="jf-portfolio__products">
+      <li>Seguro de autos</li>
+      <li>Seguro para híbridos y eléctricos</li>
+    </ul>
+  </div>
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Axa Colpatria</h2>
+    <ul class="jf-portfolio__products">
+      <li>Autos livianos</li>
+      <li>Autos eléctricos</li>
+      <li>Autos pesados</li>
+      <li>Motos</li>
+      <li>Taxis</li>
+    </ul>
+  </div>
+  <div class="jf-portfolio__insurer">
+    <h2 class="jf-portfolio__insurer-name">Travelkit</h2>
+    <ul class="jf-portfolio__products">
+      <li>Asistencia en viaje</li>
     </ul>
   </div>
 </div>
@@ -142,12 +165,13 @@ HTML,
                 'content_body'  => <<<HTML
 <div class="jf-portfolio">
   <div class="jf-portfolio__insurer">
-    <h2 class="jf-portfolio__insurer-name">Productos disponibles</h2>
+    <h2 class="jf-portfolio__insurer-name">Sura</h2>
     <ul class="jf-portfolio__products">
       <li>Seguro de hogar</li>
       <li>Seguro de arrendamiento</li>
       <li>Responsabilidad Civil Familiar</li>
       <li>Cobertura de ciberseguridad</li>
+      <li>Seguro de mascotas</li>
     </ul>
   </div>
 </div>
@@ -163,22 +187,24 @@ HTML,
                 'content_body'  => <<<HTML
 <div class="jf-portfolio">
   <div class="jf-portfolio__insurer">
-    <h2 class="jf-portfolio__insurer-name">Productos disponibles</h2>
+    <h2 class="jf-portfolio__insurer-name">Sura</h2>
     <ul class="jf-portfolio__products jf-portfolio__products--cols">
-      <li>Seguro Todo Riesgo: bienes y patrimonio</li>
-      <li>Clínicas y Hospitales</li>
-      <li>Hoteles</li>
-      <li>Instituciones Educativas</li>
-      <li>Seguro de Transporte</li>
-      <li>Cumplimiento</li>
-      <li>Responsabilidad Civil</li>
+      <li>Todo riesgo empresarial</li>
+      <li>Seguro de cumplimiento</li>
+      <li>Seguro de transporte</li>
+      <li>Protección legal empresarial</li>
+      <li>Fraude de empleados</li>
+      <li>Protección digital</li>
+      <li>Vida grupo</li>
       <li>Salud colectiva</li>
-      <li>Vida Grupo</li>
       <li>Hogar colectiva</li>
       <li>Autos colectiva</li>
-      <li>Fraude de empleados</li>
-      <li>Sostenibilidad legal</li>
-      <li>Protección Digital</li>
+      <li>Responsabilidad Civil</li>
+      <li>RC Clínicas y hospitales</li>
+      <li>RC Hoteles</li>
+      <li>RC Talleres y parqueaderos</li>
+      <li>RC Profesionales de la salud</li>
+      <li>RC Veterinarios</li>
     </ul>
   </div>
 </div>
@@ -308,7 +334,7 @@ HTML,
             'site.seo.og_image'          => '/storage/site/seo/og-default.jpg',
             'site.seo.twitter_handle'    => '',
             'site.seo.locale'            => 'es_CO',
-            'site.seo.robots'            => 'noindex,nofollow',
+            'site.seo.robots'            => 'index,follow',
             'site.seo.canonical_host'    => 'https://juanferseguros.com',
             'site.seo.schema_type'       => 'InsuranceAgency',
             'site.seo.logo'              => '/storage/site/seo/logo.png',

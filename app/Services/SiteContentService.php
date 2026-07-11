@@ -123,6 +123,14 @@ class SiteContentService
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function integrations(): array
+    {
+        return $this->remember('integrations', fn() => Setting::getGroup('integrations'));
+    }
+
+    /**
      * @return array<int, array{id: int, name: string, logo: ?string, url: ?string}>
      */
     public function allies(?int $limit = null): array

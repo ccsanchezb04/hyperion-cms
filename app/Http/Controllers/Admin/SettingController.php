@@ -18,7 +18,7 @@ class SettingController extends Controller
             ->groupBy('sett_nmgrou')
             ->map(fn ($items) => $items->pluck('sett_dsvalu', 'sett_cdkeys'));
 
-        return Inertia::render('Settings/Index', [
+        return Inertia::render('settings/Index', [
             'settings' => $settings,
         ]);
     }

@@ -8,6 +8,8 @@ const props = defineProps<{
     image: string | null;
 }>();
 
+const emit = defineEmits<{ select: [] }>();
+
 const taglines: Record<string, string> = {
     salud:    'Cuidamos tu salud y el bienestar de los tuyos.',
     vida:     'Protegemos tu autonomía, tus ingresos y el futuro de tu familia.',
@@ -31,7 +33,7 @@ const icon    = computed(() => iconMap[props.category ?? ''] ?? iconMap.salud);
 </script>
 
 <template>
-    <a :href="href" class="jf-sol-card">
+    <a :href="href" class="jf-sol-card" @click.prevent="emit('select')">
         <img v-if="image" :src="image" :alt="title" class="jf-sol-card__img" />
         <div class="jf-sol-card__body">
             <div v-if="!image" class="jf-sol-card__icon" v-html="icon" />

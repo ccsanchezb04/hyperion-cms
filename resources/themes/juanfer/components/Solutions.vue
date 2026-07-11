@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import type { SiteSolution } from '../composables/useSite';
 import { useSite } from '../composables/useSite';
+import PortfolioModal from './PortfolioModal.vue';
 import SolutionCategoryCard from './SolutionCategoryCard.vue';
 
 defineProps<{
@@ -8,6 +10,8 @@ defineProps<{
 }>();
 
 const { setting } = useSite();
+
+const active = ref<SiteSolution | null>(null);
 </script>
 
 <template>
@@ -23,9 +27,12 @@ const { setting } = useSite();
                         :category="s.category"
                         :href="s.href"
                         :image="s.image"
+                        @select="active = s"
                     />
                 </div>
             </div>
         </div>
     </section>
+
+    <PortfolioModal :solution="active" @close="active = null" />
 </template>

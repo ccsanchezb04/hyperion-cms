@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useForm, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
+import { useContactPrefill } from '../composables/useContactPrefill';
 import { useSite } from '../composables/useSite';
 import SocialLinks from './SocialLinks.vue';
 
@@ -15,6 +16,17 @@ const form = useForm({
 
 const page = usePage<{ flash?: { contact_status?: string } }>();
 const sent = computed(() => page.props.flash?.contact_status === 'sent');
+
+const { prefill, consume } = useContactPrefill();
+
+watch(prefill, (val) => {
+    if (!val) return;
+    const data = consume();
+    if (data) {
+        form.asunto  = data.asunto;
+        form.mensaje = data.mensaje;
+    }
+});
 
 const submit = () => {
     form.post(route('site.contact.store'), {

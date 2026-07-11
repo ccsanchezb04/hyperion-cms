@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import Ga4Snippet from '../components/Ga4Snippet.vue';
+import GtmSnippet from '../components/GtmSnippet.vue';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
+import WhatsAppButton from '../components/WhatsAppButton.vue';
 
 defineProps<{
     title?: string;
@@ -16,6 +19,10 @@ defineProps<{
         <main>
             <slot />
         </main>
+
+        <WhatsAppButton />
+        <GtmSnippet />
+        <Ga4Snippet />
     </div>
 </template>
 

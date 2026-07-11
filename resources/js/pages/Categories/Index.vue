@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { useSwal } from '@/composables/useSwal';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
 interface Category {
     id: number;
     name: string;
     slug: string;
     parent_id: number | null;
+    content_count: number;
     children: Category[];
 }
 
@@ -31,11 +33,51 @@ const toggleExpand = (id: number) => {
 
 const isExpanded = (id: number) => expanded.value.has(id);
 
-const deleteCategory = (id: number) => {
-    if (!confirm('Are you sure you want to delete this category? Subcategories must be removed first.')) return;
-    router.delete(`/admin/categories/${id}`, { preserveScroll: true });
+// ── SweetAlert2 ────────────────────────────────────────────────────────
+const { confirm, success, error } = useSwal();
+
+const deleteCategory = async (cat: Category) => {
+    if (cat.children?.length) {
+        await error(
+            'No se puede eliminar',
+            `"${cat.name}" tiene ${cat.children.length} subcategoría(s). Elimínalas antes de continuar.`,
+        );
+        return;
+    }
+
+    if (cat.content_count > 0) {
+        await error(
+            'No se puede eliminar',
+            `"${cat.name}" tiene ${cat.content_count} contenido(s) asociado(s). Elimina o reasigna los contenidos primero.`,
+        );
+        return;
+    }
+
+    const result = await confirm({
+        title: '¿Eliminar categoría?',
+        html: `La categoría <strong>${cat.name}</strong> será eliminada permanentemente.`,
+        icon: 'warning',
+        confirmButtonText: 'Sí, eliminar',
+    });
+
+    if (result.isConfirmed) {
+        router.delete(`/admin/categories/${cat.id}`, { preserveScroll: true });
+    }
 };
 
+// ── Flash messages desde el servidor ───────────────────────────────────
+const page = usePage<{ flash: { success?: string; error?: string } }>();
+
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success) success('¡Listo!', flash.success);
+        if (flash?.error) error('No se pudo completar', flash.error);
+    },
+    { deep: true },
+);
+
+// ── Filtro de árbol ─────────────────────────────────────────────────────
 const filterTree = (list: Category[]): Category[] => {
     if (!searchQuery.value) return list;
     const q = searchQuery.value.toLowerCase();
@@ -78,12 +120,21 @@ const filterTree = (list: Category[]): Category[] => {
                                     </button>
                                     <div>
                                         <p class="fw-medium mb-0">{{ category.name }}</p>
-                                        <p class="small text-body-secondary mb-0">{{ category.slug }}</p>
+                                        <p class="small text-body-secondary mb-0">
+                                            {{ category.slug }}
+                                            <span v-if="category.content_count > 0" class="ms-2 badge bg-secondary fw-normal">
+                                                {{ category.content_count }} contenido(s)
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-2 small">
                                     <Link :href="`/admin/categories/${category.id}/edit`" class="link-primary text-decoration-none">Edit</Link>
-                                    <button type="button" class="btn btn-link btn-sm text-danger p-0" @click="deleteCategory(category.id)">Delete</button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-link btn-sm text-danger p-0"
+                                        @click="deleteCategory(category)"
+                                    >Delete</button>
                                 </div>
                             </div>
 
@@ -95,11 +146,20 @@ const filterTree = (list: Category[]): Category[] => {
                                 >
                                     <div>
                                         <p class="fw-medium mb-0">{{ child.name }}</p>
-                                        <p class="small text-body-secondary mb-0">{{ child.slug }}</p>
+                                        <p class="small text-body-secondary mb-0">
+                                            {{ child.slug }}
+                                            <span v-if="child.content_count > 0" class="ms-2 badge bg-secondary fw-normal">
+                                                {{ child.content_count }} contenido(s)
+                                            </span>
+                                        </p>
                                     </div>
                                     <div class="d-flex align-items-center gap-2 small">
                                         <Link :href="`/admin/categories/${child.id}/edit`" class="link-primary text-decoration-none">Edit</Link>
-                                        <button type="button" class="btn btn-link btn-sm text-danger p-0" @click="deleteCategory(child.id)">Delete</button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-link btn-sm text-danger p-0"
+                                            @click="deleteCategory(child)"
+                                        >Delete</button>
                                     </div>
                                 </div>
                             </div>

@@ -1,5 +1,6 @@
 import '../css/app.css';
 import 'bootstrap/dist/js/bootstrap.bundle';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createBootstrap } from 'bootstrap-vue-next';

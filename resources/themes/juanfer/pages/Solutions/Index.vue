@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import Footer from '../../components/Footer.vue';
 import Hero from '../../components/Hero.vue';
 import Navbar from '../../components/Navbar.vue';
+import PortfolioModal from '../../components/PortfolioModal.vue';
 import SiteHead from '../../components/SiteHead.vue';
 import SolutionCategoryCard from '../../components/SolutionCategoryCard.vue';
 import type { SiteSeoData, SiteSolution } from '../../composables/useSite';
@@ -14,6 +16,8 @@ defineProps<{
 }>();
 
 const { setting } = useSite();
+
+const active = ref<SiteSolution | null>(null);
 </script>
 
 <template>
@@ -34,6 +38,7 @@ const { setting } = useSite();
                             :category="s.category"
                             :href="s.href"
                             :image="s.image"
+                            @select="active = s"
                         />
                     </div>
                 </div>
@@ -42,4 +47,6 @@ const { setting } = useSite();
 
         <Footer />
     </SiteLayout>
+
+    <PortfolioModal :solution="active" @close="active = null" />
 </template>

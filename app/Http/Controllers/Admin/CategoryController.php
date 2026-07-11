@@ -7,6 +7,7 @@ use App\Http\Resources\Shared\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,8 +21,14 @@ class CategoryController extends Controller
             ->orderBy('cate_nmname')
             ->get();
 
+        // Conteo de contenidos por categoría en una sola query
+        $contentCounts = DB::table('hycms_content_category')
+            ->select('coca_idcate', DB::raw('count(*) as cnt'))
+            ->groupBy('coca_idcate')
+            ->pluck('cnt', 'coca_idcate');
+
         return Inertia::render('Categories/Index', [
-            'categories' => $this->serializeTree($tree),
+            'categories' => $this->serializeTree($tree, $contentCounts),
         ]);
     }
 
@@ -107,15 +114,16 @@ class CategoryController extends Controller
      * Serialize a category collection (with eager-loaded children) into a
      * nested tree shape that the Vue tree component can render directly.
      */
-    private function serializeTree($categories): array
+    private function serializeTree($categories, $contentCounts = null): array
     {
-        return $categories->map(function (Category $category): array {
+        return $categories->map(function (Category $category) use ($contentCounts): array {
             return [
-                'id'        => $category->cate_idcate,
-                'name'      => $category->cate_nmname,
-                'slug'      => $category->cate_cdslug,
-                'parent_id' => $category->cate_idpare,
-                'children'  => $this->serializeTree($category->childrenRecursive),
+                'id'            => $category->cate_idcate,
+                'name'          => $category->cate_nmname,
+                'slug'          => $category->cate_cdslug,
+                'parent_id'     => $category->cate_idpare,
+                'content_count' => $contentCounts ? (int) ($contentCounts[$category->cate_idcate] ?? 0) : 0,
+                'children'      => $this->serializeTree($category->childrenRecursive, $contentCounts),
             ];
         })->all();
     }

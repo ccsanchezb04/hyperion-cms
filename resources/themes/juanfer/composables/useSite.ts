@@ -10,6 +10,7 @@ export interface SiteSharedProps {
     settings: Record<string, string>;
     organization: Record<string, string>;
     menu: SiteMenuItem[];
+    integrations: Record<string, string>;
 }
 
 export interface SiteSolution {
@@ -84,9 +85,11 @@ export function useSite() {
     const settings = computed<Record<string, string>>(() => page.props.site?.settings ?? {});
     const organization = computed<Record<string, string>>(() => page.props.site?.organization ?? {});
     const menu = computed<SiteMenuItem[]>(() => page.props.site?.menu ?? []);
+    const integrations = computed<Record<string, string>>(() => page.props.site?.integrations ?? {});
 
     const setting = (key: string, fallback = ''): string => settings.value[key] ?? fallback;
     const orgSetting = (key: string, fallback = ''): string => organization.value[key] ?? fallback;
+    const integration = (key: string, fallback = ''): string => integrations.value[key] ?? fallback;
 
-    return { settings, organization, menu, setting, orgSetting };
+    return { settings, organization, menu, integrations, setting, orgSetting, integration };
 }

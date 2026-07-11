@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MediaPicker from '@/components/MediaPicker.vue';
+import RichTextEditor from '@/components/RichTextEditor.vue';
 import GoogleSnippet from '@/components/SeoPreviews/GoogleSnippet.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -162,8 +163,9 @@ const previewUrl = computed(() => {
 });
 
 const previewTitle = computed(() => form.seo.meta_title || form.title || 'Title');
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 const previewDesc = computed(() =>
-    form.seo.meta_description || (form.body ? form.body.slice(0, 160) : 'Description'),
+    form.seo.meta_description || (form.body ? stripHtml(form.body).slice(0, 160) : 'Description'),
 );
 </script>
 
@@ -210,7 +212,7 @@ const previewDesc = computed(() =>
 
                         <div>
                             <label class="form-label">Content Body</label>
-                            <textarea v-model="form.body" rows="10" class="form-control" placeholder="Write your content here..."></textarea>
+                            <RichTextEditor v-model="form.body" />
                         </div>
 
                         <div v-if="categories.length">
@@ -287,7 +289,7 @@ const previewDesc = computed(() =>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Body ({{ lang.toUpperCase() }})</label>
-                                    <textarea v-model="form.translations[lang].body" rows="6" class="form-control"></textarea>
+                                    <RichTextEditor v-model="form.translations[lang].body" />
                                 </div>
                             </div>
                         </details>

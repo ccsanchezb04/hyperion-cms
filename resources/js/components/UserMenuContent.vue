@@ -2,7 +2,7 @@
 import UserInfo from '@/components/UserInfo.vue';
 import type { User } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { LogOut, Settings } from 'lucide-vue-next';
+import { LogOut, UserRound } from 'lucide-vue-next';
 
 defineProps<{
     user: User;
@@ -16,8 +16,8 @@ defineProps<{
     <li><hr class="dropdown-divider" /></li>
     <li>
         <Link :href="route('profile.edit')" class="dropdown-item d-flex align-items-center gap-2">
-            <Settings :size="16" />
-            <span>Settings</span>
+            <UserRound :size="16" />
+            <span>Mi perfil</span>
         </Link>
     </li>
     <li><hr class="dropdown-divider" /></li>

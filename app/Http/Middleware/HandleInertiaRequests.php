@@ -67,7 +67,9 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'flash' => [
-                'status' => fn () => $request->session()->get('status'),
+                'status'  => fn () => $request->session()->get('status'),
+                'success' => fn () => $request->session()->get('success'),
+                'error'   => fn () => $request->session()->get('error'),
             ],
         ];
     }
@@ -96,6 +98,7 @@ class HandleInertiaRequests extends Middleware
                 'settings'     => fn () => $site->siteSettings(),
                 'organization' => fn () => $site->organizationSettings(),
                 'menu'         => fn () => $site->mainMenu(),
+                'integrations' => fn () => $site->integrations(),
             ],
             'flash' => [
                 'contact_status' => fn () => $request->session()->get('contact_status'),

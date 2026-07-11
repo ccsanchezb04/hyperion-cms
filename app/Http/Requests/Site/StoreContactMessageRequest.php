@@ -49,8 +49,21 @@ class StoreContactMessageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'asunto.in' => 'El asunto seleccionado no es válido.',
-            'mensaje.min' => 'El mensaje debe tener al menos :min caracteres.',
+            'nombre.required'  => 'El nombre es obligatorio.',
+            'nombre.string'    => 'El nombre debe ser texto.',
+            'nombre.max'       => 'El nombre no puede tener más de :max caracteres.',
+
+            'email.required'   => 'El correo electrónico es obligatorio.',
+            'email.email'      => 'Ingresa una dirección de correo electrónico válida.',
+            'email.max'        => 'El correo electrónico no puede tener más de :max caracteres.',
+
+            'asunto.required'  => 'Debes seleccionar un asunto.',
+            'asunto.in'        => 'El asunto seleccionado no es válido.',
+
+            'mensaje.required' => 'El mensaje es obligatorio.',
+            'mensaje.string'   => 'El mensaje debe ser texto.',
+            'mensaje.min'      => 'El mensaje debe tener al menos :min caracteres.',
+            'mensaje.max'      => 'El mensaje no puede superar los :max caracteres.',
         ];
     }
 }
