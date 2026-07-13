@@ -3,13 +3,23 @@ import Ga4Snippet from '../components/Ga4Snippet.vue';
 import GtmSnippet from '../components/GtmSnippet.vue';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 import WhatsAppButton from '../components/WhatsAppButton.vue';
+import { useSite } from '../composables/useSite';
+import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 defineProps<{
     title?: string;
 }>();
+
+const { integration } = useSite();
+const gscCode = computed(() => integration('site.integrations.gsc_verification'));
 </script>
 
 <template>
+    <Head v-if="gscCode">
+        <meta name="google-site-verification" :content="gscCode" />
+    </Head>
+
     <div class="jf-site">
         <!-- Selector de idioma fijo en la esquina superior derecha -->
         <div class="jf-lang-bar">
