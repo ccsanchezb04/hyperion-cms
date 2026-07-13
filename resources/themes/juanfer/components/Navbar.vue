@@ -16,7 +16,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll));
 </script>
 
 <template>
-    <nav class="jf-navbar navbar jf-dark-bg navbar-expand-lg sticky-top">
+    <nav class="jf-navbar navbar jf-dark-bg navbar-expand-lg sticky-top" data-bs-theme="dark">
         <div class="container">
             <a class="navbar-brand p-0 jf-navbar-brand" :class="{ 'jf-navbar-brand--visible': scrolled }" href="/">
                 <img :src="logoSrc" alt="JuanFer Seguros" class="jf-navbar-logo" />

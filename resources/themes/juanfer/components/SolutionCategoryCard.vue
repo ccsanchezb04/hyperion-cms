@@ -114,9 +114,12 @@ const icon    = computed(() => iconMap[props.category ?? ''] ?? iconMap.salud);
 .jf-sol-card__desc {
     font-size: 0.93rem;
     color: rgba(255, 255, 255, 0.72);
-    flex: 1;
     margin: 0;
     line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .jf-sol-card__cta {
