@@ -247,7 +247,35 @@ const cotiza = () => {
     column-gap: 1.5rem;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 767px) {
+    .jf-pm-backdrop {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .jf-pm-dialog {
+        border-radius: 14px 14px 0 0;
+        max-height: 92vh;
+    }
+
+    .jf-pm-header {
+        padding: 1.25rem 1.25rem 1rem;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .jf-pm-header__actions {
+        align-self: flex-end;
+    }
+
+    .jf-pm-body {
+        padding: 1.25rem;
+    }
+
+    .jf-solution-body :deep(.jf-portfolio) {
+        grid-template-columns: 1fr;
+    }
+
     .jf-solution-body :deep(.jf-portfolio__products--cols) {
         column-count: 1;
     }
