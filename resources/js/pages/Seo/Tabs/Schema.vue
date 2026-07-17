@@ -24,6 +24,7 @@ const form = useForm({
         'site.organization.social.instagram':    org['site.organization.social.instagram'] ?? '',
         'site.organization.social.linkedin':     org['site.organization.social.linkedin'] ?? '',
         'site.organization.social.tiktok':       org['site.organization.social.tiktok'] ?? '',
+        'site.organization.social.youtube':      org['site.organization.social.youtube'] ?? '',
     },
 });
 
@@ -143,6 +144,10 @@ const mapEmbedUrl = computed(() =>
             <div class="col-md-6 mb-3">
                 <label class="form-label">TikTok URL</label>
                 <input v-model="form.values['site.organization.social.tiktok']" type="url" class="form-control" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">YouTube URL</label>
+                <input v-model="form.values['site.organization.social.youtube']" type="url" class="form-control" placeholder="https://www.youtube.com/@canal" />
             </div>
         </div>
 

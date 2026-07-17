@@ -28,6 +28,7 @@ interface ContentDetail {
     type: string;
     status: string;
     body: string;
+    embedUrl: string;
     categories: number[];
     mediaIds: number[];
     seo: ContentSeoForm;
@@ -73,6 +74,7 @@ const form = useForm({
     type: props.content.type,
     status: props.content.status,
     body: props.content.body,
+    embed_url: props.content.embedUrl ?? '',
     categories: [...props.content.categories],
     media_ids: [...(props.content.mediaIds ?? [])],
     seo: {
@@ -167,6 +169,14 @@ const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 const previewDesc = computed(() =>
     form.seo.meta_description || (form.body ? stripHtml(form.body).slice(0, 160) : 'Description'),
 );
+
+const embedSrc = computed((): string => {
+    const url = form.embed_url?.trim();
+    if (!url) return '';
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+    return url;
+});
 </script>
 
 <template>
@@ -213,6 +223,22 @@ const previewDesc = computed(() =>
                         <div>
                             <label class="form-label">Content Body</label>
                             <RichTextEditor v-model="form.body" />
+                        </div>
+
+                        <div>
+                            <label class="form-label">Media externa (YouTube, Facebook, etc.)</label>
+                            <input
+                                v-model="form.embed_url"
+                                type="url"
+                                class="form-control"
+                                :class="{ 'is-invalid': form.errors.embed_url }"
+                                placeholder="https://www.youtube.com/watch?v=..."
+                            />
+                            <div class="form-text">Pega la URL del video o publicación. Se mostrará como iframe en la página pública.</div>
+                            <div v-if="form.errors.embed_url" class="invalid-feedback d-block">{{ form.errors.embed_url }}</div>
+                            <div v-if="embedSrc" class="ratio ratio-16x9 mt-2 border rounded overflow-hidden" style="max-height: 300px;">
+                                <iframe :src="embedSrc" allowfullscreen loading="lazy" title="Preview media externa" style="border:0;" />
+                            </div>
                         </div>
 
                         <div v-if="categories.length">

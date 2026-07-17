@@ -26,6 +26,7 @@ class Content extends Model
         'cont_cdslug',
         'cont_cdtype',
         'cont_cdstat',
+        'cont_dsembd',
         'cont_idauth',
         'cont_dtpubl',
     ];
@@ -36,6 +37,7 @@ class Content extends Model
         'cont_cdslug' => 'string',
         'cont_cdtype' => 'string',
         'cont_cdstat' => 'string',
+        'cont_dsembd' => 'string',
         'cont_idauth' => 'integer',
         'cont_dtpubl' => 'datetime',
         'cont_dtcrea' => 'datetime',

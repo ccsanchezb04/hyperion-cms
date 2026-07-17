@@ -179,6 +179,7 @@ class SiteContentService
                 'title' => $title,
                 'slug' => $slugs[$currentLang] ?? $content->cont_cdslug,
                 'body' => $body,
+                'embed_url' => $content->cont_dsembd ?? null,
                 'image' => $this->primaryImageUrl($content),
                 'media' => $content->media
                     ->filter(fn($m) => $m->isImage())

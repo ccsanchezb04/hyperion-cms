@@ -15,6 +15,7 @@ const props = defineProps<{
         title: string;
         slug: string;
         body: string;
+        embed_url: string | null;
         image: string | null;
         media: Array<{ url: string; alt: string }>;
         category: string | null;
@@ -24,6 +25,14 @@ const props = defineProps<{
 }>();
 
 const { setting } = useSite();
+
+const embedSrc = computed((): string => {
+    const url = props.solution.embed_url?.trim();
+    if (!url) return '';
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+    return url;
+});
 
 const categoryTagline = computed(() => {
     const cat = props.solution.category;
@@ -58,6 +67,15 @@ const categoryTagline = computed(() => {
         <section class="py-5" style="background: var(--jf-bg-muted)">
             <div class="container">
                 <div class="jf-solution-body" v-html="solution.body" />
+                <div v-if="embedSrc" class="ratio ratio-16x9 mt-4 rounded overflow-hidden shadow-sm">
+                    <iframe
+                        :src="embedSrc"
+                        allowfullscreen
+                        loading="lazy"
+                        :title="solution.title"
+                        style="border: 0;"
+                    />
+                </div>
             </div>
         </section>
 
