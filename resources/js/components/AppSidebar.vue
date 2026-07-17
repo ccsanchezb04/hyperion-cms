@@ -9,9 +9,7 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { BOffcanvas } from 'bootstrap-vue-next';
 import {
-    BookOpen,
     FileText,
-    Folder,
     Image,
     Inbox,
     KeyRound,
@@ -30,33 +28,22 @@ const { can } = usePermissions();
 
 const allNavItems: NavItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutGrid },
-    { title: 'Contents', href: '/admin/contents', icon: FileText, permission: 'view-content' },
-    { title: 'Categories', href: '/admin/categories', icon: Tags, permission: 'view-category' },
-    { title: 'Media Library', href: '/admin/media', icon: Image, permission: 'view-media' },
-    { title: 'Menus', href: '/admin/menus', icon: ListTree, permission: 'view-menu' },
-    { title: 'Contact messages', href: '/admin/contact-messages', icon: Inbox, permission: 'view-contact-messages' },
-    { title: 'Users', href: '/admin/users', icon: Users, permission: 'view-users' },
+    { title: 'Contenidos', href: '/admin/contents', icon: FileText, permission: 'view-content' },
+    { title: 'Categorías', href: '/admin/categories', icon: Tags, permission: 'view-category' },
+    { title: 'Biblioteca de medios', href: '/admin/media', icon: Image, permission: 'view-media' },
+    { title: 'Menús', href: '/admin/menus', icon: ListTree, permission: 'view-menu' },
+    { title: 'Mensajes de contacto', href: '/admin/contact-messages', icon: Inbox, permission: 'view-contact-messages' },
+    { title: 'Usuarios', href: '/admin/users', icon: Users, permission: 'view-users' },
     { title: 'Roles', href: '/admin/roles', icon: ShieldCheck, permission: 'manage-roles' },
-    { title: 'Permissions', href: '/admin/permissions', icon: KeyRound, permission: 'view-permissions' },
-    { title: 'Themes', href: '/admin/themes', icon: Paintbrush, permission: 'manage-settings' },
+    { title: 'Permisos', href: '/admin/permissions', icon: KeyRound, permission: 'view-permissions' },
+    { title: 'Temas', href: '/admin/themes', icon: Paintbrush, permission: 'manage-settings' },
     { title: 'SEO', href: '/admin/seo', icon: Search, permission: 'manage-seo' },
-    { title: 'Settings', href: '/admin/settings', icon: Settings, permission: 'view-settings' },
+    { title: 'Configuración', href: '/admin/settings', icon: Settings, permission: 'view-settings' },
 ];
 
 const mainNavItems = computed(() => allNavItems.filter((item) => can(item.permission)));
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
-    },
-];
+const footerNavItems: NavItem[] = [];
 
 const { mobileOpen, desktopCollapsed, closeMobile } = useSidebar();
 </script>
