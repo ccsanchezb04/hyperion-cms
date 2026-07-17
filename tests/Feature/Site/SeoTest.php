@@ -27,7 +27,7 @@ class SeoTest extends TestCase
                     ->where('title', 'Inicio | JuanFer Seguros')
                     ->where('description', fn ($d) => str_contains($d, 'Protección familiar'))
                     ->where('locale', 'es_CO')
-                    ->where('robots', 'noindex,nofollow')
+                    ->where('robots', 'index,follow')
                     ->where('canonical', 'https://juanferseguros.com/')
                     ->has('og.image')
                     ->has('og.type')
