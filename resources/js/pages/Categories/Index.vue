@@ -20,7 +20,7 @@ defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'Categories', href: '/admin/categories' },
+    { title: 'Categorías', href: '/admin/categories' },
 ];
 
 const expanded = ref<Set<number>>(new Set());
@@ -91,19 +91,19 @@ const filterTree = (list: Category[]): Category[] => {
 </script>
 
 <template>
-    <Head title="Categories" />
+    <Head title="Categorías" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container-xl py-4">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h1 class="h4 fw-bold mb-0">Categories</h1>
-                        <Link href="/admin/categories/create" class="btn btn-primary">Create Category</Link>
+                        <h1 class="h4 fw-bold mb-0">Categorías</h1>
+                        <Link href="/admin/categories/create" class="btn btn-primary">Crear categoría</Link>
                     </div>
 
                     <div class="mb-3">
-                        <input v-model="searchQuery" type="text" placeholder="Search categories..." class="form-control" />
+                        <input v-model="searchQuery" type="text" placeholder="Buscar categorías..." class="form-control" />
                     </div>
 
                     <div v-if="filterTree(categories).length > 0" class="d-flex flex-column gap-2">
@@ -129,12 +129,12 @@ const filterTree = (list: Category[]): Category[] => {
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-2 small">
-                                    <Link :href="`/admin/categories/${category.id}/edit`" class="link-primary text-decoration-none">Edit</Link>
+                                    <Link :href="`/admin/categories/${category.id}/edit`" class="link-primary text-decoration-none">Editar</Link>
                                     <button
                                         type="button"
                                         class="btn btn-link btn-sm text-danger p-0"
                                         @click="deleteCategory(category)"
-                                    >Delete</button>
+                                    >Eliminar</button>
                                 </div>
                             </div>
 
@@ -154,12 +154,12 @@ const filterTree = (list: Category[]): Category[] => {
                                         </p>
                                     </div>
                                     <div class="d-flex align-items-center gap-2 small">
-                                        <Link :href="`/admin/categories/${child.id}/edit`" class="link-primary text-decoration-none">Edit</Link>
+                                        <Link :href="`/admin/categories/${child.id}/edit`" class="link-primary text-decoration-none">Editar</Link>
                                         <button
                                             type="button"
                                             class="btn btn-link btn-sm text-danger p-0"
                                             @click="deleteCategory(child)"
-                                        >Delete</button>
+                                        >Eliminar</button>
                                     </div>
                                 </div>
                             </div>
@@ -168,8 +168,8 @@ const filterTree = (list: Category[]): Category[] => {
 
                     <div v-else class="text-center py-5">
                         <i class="bi bi-tags display-1 text-body-secondary"></i>
-                        <p class="mt-2 text-body-secondary mb-0">No categories found.</p>
-                        <p class="small text-body-secondary">Create your first category to get started.</p>
+                        <p class="mt-2 text-body-secondary mb-0">No se encontraron categorías.</p>
+                        <p class="small text-body-secondary">Crea tu primera categoría para comenzar.</p>
                     </div>
                 </div>
             </div>

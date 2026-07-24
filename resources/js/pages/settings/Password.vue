@@ -8,7 +8,7 @@ import { TransitionRoot } from '@headlessui/vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const breadcrumbItems: BreadcrumbItem[] = [{ title: 'Password settings', href: '/admin/settings/password' }];
+const breadcrumbItems: BreadcrumbItem[] = [{ title: 'Cambiar contraseña', href: '/admin/settings/password' }];
 
 const passwordInput = ref<HTMLInputElement>();
 const currentPasswordInput = ref<HTMLInputElement>();
@@ -39,15 +39,15 @@ const updatePassword = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Profile settings" />
+        <Head title="Cambiar contraseña" />
 
         <SettingsLayout>
             <div class="d-flex flex-column gap-4">
-                <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+                <HeadingSmall title="Cambiar contraseña" description="Usa una contraseña larga y aleatoria para mantener tu cuenta segura" />
 
                 <form @submit.prevent="updatePassword" class="d-flex flex-column gap-3">
                     <div>
-                        <label for="current_password" class="form-label">Current Password</label>
+                        <label for="current_password" class="form-label">Contraseña actual</label>
                         <input
                             id="current_password"
                             ref="currentPasswordInput"
@@ -56,13 +56,13 @@ const updatePassword = () => {
                             class="form-control"
                             :class="{ 'is-invalid': form.errors.current_password }"
                             autocomplete="current-password"
-                            placeholder="Current password"
+                            placeholder="Contraseña actual"
                         />
                         <InputError :message="form.errors.current_password" />
                     </div>
 
                     <div>
-                        <label for="password" class="form-label">New password</label>
+                        <label for="password" class="form-label">Nueva contraseña</label>
                         <input
                             id="password"
                             ref="passwordInput"
@@ -71,13 +71,13 @@ const updatePassword = () => {
                             class="form-control"
                             :class="{ 'is-invalid': form.errors.password }"
                             autocomplete="new-password"
-                            placeholder="New password"
+                            placeholder="Nueva contraseña"
                         />
                         <InputError :message="form.errors.password" />
                     </div>
 
                     <div>
-                        <label for="password_confirmation" class="form-label">Confirm password</label>
+                        <label for="password_confirmation" class="form-label">Confirmar contraseña</label>
                         <input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
@@ -85,13 +85,13 @@ const updatePassword = () => {
                             class="form-control"
                             :class="{ 'is-invalid': form.errors.password_confirmation }"
                             autocomplete="new-password"
-                            placeholder="Confirm password"
+                            placeholder="Confirmar contraseña"
                         />
                         <InputError :message="form.errors.password_confirmation" />
                     </div>
 
                     <div class="d-flex align-items-center gap-3">
-                        <button type="submit" class="btn btn-primary" :disabled="form.processing">Save password</button>
+                        <button type="submit" class="btn btn-primary" :disabled="form.processing">Guardar contraseña</button>
 
                         <TransitionRoot
                             :show="form.recentlySuccessful"
@@ -100,7 +100,7 @@ const updatePassword = () => {
                             leave="transition-opacity"
                             leave-to="opacity-0"
                         >
-                            <p class="small text-body-secondary mb-0">Saved</p>
+                            <p class="small text-body-secondary mb-0">Guardado</p>
                         </TransitionRoot>
                     </div>
                 </form>

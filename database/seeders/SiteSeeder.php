@@ -275,6 +275,11 @@ HTML,
             ['cate_cdslug' => 'aliados'],
             ['cate_nmname' => 'Aliados', 'cate_idpare' => null]
         );
+
+        Category::firstOrCreate(
+            ['cate_cdslug' => 'destacado'],
+            ['cate_nmname' => 'Destacado', 'cate_idpare' => null]
+        );
     }
 
     protected function seedSettings(): void

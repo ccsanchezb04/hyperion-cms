@@ -46,7 +46,7 @@ const uploadOgImage = (event: Event) => {
         onSuccess: () => { uploading.value = false; },
         onError: (errors) => {
             uploading.value = false;
-            uploadError.value = errors.image ?? 'Upload error';
+            uploadError.value = errors.image ?? 'Error al subir';
         },
     });
 };

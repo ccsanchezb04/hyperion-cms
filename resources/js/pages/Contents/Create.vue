@@ -26,8 +26,8 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'Contents', href: '/admin/contents' },
-    { title: 'Create Content', href: '/admin/contents/create' },
+    { title: 'Contenidos', href: '/admin/contents' },
+    { title: 'Crear contenido', href: '/admin/contents/create' },
 ];
 
 const initialTranslations: Record<string, { title: string; body: string; slug: string }> = {};
@@ -93,7 +93,7 @@ const translateWithAi = async (lang: string) => {
         form.translations[lang].title = json.data?.title ?? form.translations[lang].title;
         form.translations[lang].body = json.data?.body ?? form.translations[lang].body;
     } catch (e: unknown) {
-        aiTranslate[lang].error = e instanceof Error ? e.message : 'Translation failed';
+        aiTranslate[lang].error = e instanceof Error ? e.message : 'Error de traducción';
     } finally {
         aiTranslate[lang].loading = false;
     }
@@ -138,17 +138,17 @@ const embedSrc = computed((): string => {
 </script>
 
 <template>
-    <Head title="Create Content" />
+    <Head title="Crear contenido" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container-xl py-4">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <h1 class="h4 fw-bold mb-4">Create Content</h1>
+                    <h1 class="h4 fw-bold mb-4">Crear contenido</h1>
 
                     <form @submit.prevent="submit" class="d-flex flex-column gap-3">
                         <div>
-                            <label class="form-label">Title *</label>
+                            <label class="form-label">Título *</label>
                             <input v-model="form.title" type="text" class="form-control" :class="{ 'is-invalid': form.errors.title }" @input="generateSlug" required />
                             <div v-if="form.errors.title" class="invalid-feedback d-block">{{ form.errors.title }}</div>
                         </div>
@@ -161,25 +161,25 @@ const embedSrc = computed((): string => {
 
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
-                                <label class="form-label">Type</label>
+                                <label class="form-label">Tipo</label>
                                 <select v-model="form.type" class="form-select">
                                     <option value="post">Post</option>
-                                    <option value="page">Page</option>
-                                    <option value="custom">Custom</option>
+                                    <option value="page">Página</option>
+                                    <option value="custom">Personalizado</option>
                                 </select>
                             </div>
                             <div class="col-12 col-md-6">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">Estado</label>
                                 <select v-model="form.status" class="form-select">
-                                    <option value="draft">Draft</option>
-                                    <option value="published">Published</option>
-                                    <option value="archived">Archived</option>
+                                    <option value="draft">Borrador</option>
+                                    <option value="published">Publicado</option>
+                                    <option value="archived">Archivado</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label class="form-label">Content Body</label>
+                            <label class="form-label">Cuerpo del contenido</label>
                             <RichTextEditor v-model="form.body" />
                         </div>
 
@@ -200,7 +200,7 @@ const embedSrc = computed((): string => {
                         </div>
 
                         <div v-if="categories.length">
-                            <label class="form-label">Categories</label>
+                            <label class="form-label">Categorías</label>
                             <div class="d-flex flex-column gap-2">
                                 <div v-for="category in categories" :key="category.id" class="form-check">
                                     <input v-model="form.categories" type="checkbox" :value="category.id" :id="`cat-${category.id}`" class="form-check-input" />
@@ -243,7 +243,7 @@ const embedSrc = computed((): string => {
                                     {{ aiTranslate[lang].error }}
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Title ({{ lang.toUpperCase() }})</label>
+                                    <label class="form-label">Título ({{ lang.toUpperCase() }})</label>
                                     <input
                                         v-model="form.translations[lang].title"
                                         type="text"
@@ -264,7 +264,7 @@ const embedSrc = computed((): string => {
                                     <div class="form-text">Vacío = usa el slug por defecto (Español).</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Body ({{ lang.toUpperCase() }})</label>
+                                    <label class="form-label">Cuerpo ({{ lang.toUpperCase() }})</label>
                                     <RichTextEditor v-model="form.translations[lang].body" />
                                 </div>
                             </div>
@@ -314,9 +314,9 @@ const embedSrc = computed((): string => {
                         </details>
 
                         <div class="d-flex justify-content-end gap-2">
-                            <Link href="/admin/contents" class="btn btn-outline-secondary">Cancel</Link>
+                            <Link href="/admin/contents" class="btn btn-outline-secondary">Cancelar</Link>
                             <button type="submit" class="btn btn-primary" :disabled="form.processing">
-                                {{ form.processing ? 'Creating...' : 'Create Content' }}
+                                {{ form.processing ? 'Guardando...' : 'Crear contenido' }}
                             </button>
                         </div>
                     </form>

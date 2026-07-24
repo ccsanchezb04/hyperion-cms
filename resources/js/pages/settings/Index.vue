@@ -13,14 +13,14 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'Settings', href: '/admin/settings' },
+    { title: 'Configuración', href: '/admin/settings' },
 ];
 
 const tabs = [
     { id: 'general', label: 'General', icon: 'gear-fill' },
     { id: 'seo', label: 'SEO', icon: 'search' },
-    { id: 'media', label: 'Media', icon: 'image' },
-    { id: 'mail', label: 'Mail', icon: 'envelope-fill' },
+    { id: 'media', label: 'Medios', icon: 'image' },
+    { id: 'mail', label: 'Correo', icon: 'envelope-fill' },
 ];
 
 const activeTab = ref('general');
@@ -49,13 +49,13 @@ const save = () => {
 </script>
 
 <template>
-    <Head title="Settings" />
+    <Head title="Configuración" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container-xl py-4">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <h1 class="h4 fw-bold mb-4">Settings</h1>
+                    <h1 class="h4 fw-bold mb-4">Configuración</h1>
 
                     <ul class="nav nav-tabs mb-4">
                         <li v-for="tab in tabs" :key="tab.id" class="nav-item">
@@ -73,23 +73,23 @@ const save = () => {
 
                     <form @submit.prevent="save" class="d-flex flex-column gap-3">
                         <div v-if="Object.keys(currentValues).length === 0" class="text-body-secondary">
-                            No settings defined for this group yet.
+                            No hay configuraciones definidas para este grupo.
                         </div>
 
                         <div v-for="(value, key) in currentValues" :key="String(key)">
                             <label class="form-label">{{ formatSettingKey(String(key)) }}</label>
                             <select v-if="isBoolean(value)" v-model="localSettings[activeTab][key]" class="form-select">
-                                <option :value="'1'">Enabled</option>
-                                <option :value="'0'">Disabled</option>
+                                <option :value="'1'">Habilitado</option>
+                                <option :value="'0'">Deshabilitado</option>
                             </select>
                             <input v-else v-model="localSettings[activeTab][key]" type="text" class="form-control" />
                         </div>
 
-                        <div v-if="form.recentlySuccessful" class="alert alert-success py-2 mb-0">Settings saved.</div>
+                        <div v-if="form.recentlySuccessful" class="alert alert-success py-2 mb-0">Configuración guardada.</div>
 
                         <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
                             <button type="submit" class="btn btn-primary" :disabled="form.processing">
-                                {{ form.processing ? 'Saving...' : 'Save Settings' }}
+                                {{ form.processing ? 'Guardando...' : 'Guardar configuración' }}
                             </button>
                         </div>
                     </form>

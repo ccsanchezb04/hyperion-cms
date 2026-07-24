@@ -29,11 +29,11 @@ interface QuickAction {
 }
 
 const allQuickActions: QuickAction[] = [
-    { href: '/admin/contents', icon: 'file-earmark-text-fill', title: 'Contents', description: 'Create, edit and publish your content', permission: 'view-content' },
-    { href: '/admin/categories', icon: 'tags-fill', title: 'Categories', description: 'Organize content into a hierarchy', permission: 'view-category' },
-    { href: '/admin/media', icon: 'images', title: 'Media Library', description: 'Upload and manage files', permission: 'view-media' },
-    { href: '/admin/menus', icon: 'list-nested', title: 'Menus', description: 'Build site navigation menus', permission: 'view-menu' },
-    { href: '/admin/settings', icon: 'gear-fill', title: 'Settings', description: 'Configure your site', permission: 'view-settings' },
+    { href: '/admin/contents', icon: 'file-earmark-text-fill', title: 'Contenidos', description: 'Crea, edita y publica tu contenido', permission: 'view-content' },
+    { href: '/admin/categories', icon: 'tags-fill', title: 'Categorías', description: 'Organiza el contenido en jerarquías', permission: 'view-category' },
+    { href: '/admin/media', icon: 'images', title: 'Biblioteca de medios', description: 'Sube y administra archivos', permission: 'view-media' },
+    { href: '/admin/menus', icon: 'list-nested', title: 'Menús', description: 'Construye los menús de navegación', permission: 'view-menu' },
+    { href: '/admin/settings', icon: 'gear-fill', title: 'Configuración', description: 'Configura tu sitio', permission: 'view-settings' },
 ];
 
 const quickActions = computed(() => allQuickActions.filter((a) => can(a.permission)));
@@ -45,8 +45,8 @@ const quickActions = computed(() => allQuickActions.filter((a) => can(a.permissi
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container-xl py-4">
             <div class="mb-4">
-                <h1 class="h2 fw-bold mb-1">Welcome to Hyperion CMS</h1>
-                <p class="text-body-secondary mb-0">Manage your content, media, and settings from here.</p>
+                <h1 class="h2 fw-bold mb-1">Bienvenido a Hyperion CMS</h1>
+                <p class="text-body-secondary mb-0">Administra tu contenido, archivos y configuración desde aquí.</p>
             </div>
 
             <div class="row g-3 mb-4">
@@ -55,14 +55,14 @@ const quickActions = computed(() => allQuickActions.filter((a) => can(a.permissi
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <p class="small text-body-secondary mb-1">Total Contents</p>
+                                    <p class="small text-body-secondary mb-1">Total de contenidos</p>
                                     <p class="h3 fw-bold mb-0">{{ statistics.contents.total }}</p>
                                 </div>
                                 <i class="bi bi-file-earmark-text-fill display-6 text-primary"></i>
                             </div>
                             <div class="d-flex justify-content-between small mt-3">
-                                <span class="text-success">{{ statistics.contents.published }} published</span>
-                                <span class="text-warning">{{ statistics.contents.draft }} draft</span>
+                                <span class="text-success">{{ statistics.contents.published }} publicados</span>
+                                <span class="text-warning">{{ statistics.contents.draft }} borradores</span>
                             </div>
                         </div>
                     </div>
@@ -73,13 +73,13 @@ const quickActions = computed(() => allQuickActions.filter((a) => can(a.permissi
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <p class="small text-body-secondary mb-1">Total Media</p>
+                                    <p class="small text-body-secondary mb-1">Total de archivos</p>
                                     <p class="h3 fw-bold mb-0">{{ statistics.media.total }}</p>
                                 </div>
                                 <i class="bi bi-images display-6 text-primary"></i>
                             </div>
                             <div class="d-flex justify-content-between small mt-3">
-                                <span class="text-info">{{ statistics.media.images }} images</span>
+                                <span class="text-info">{{ statistics.media.images }} imágenes</span>
                                 <span class="text-danger">{{ statistics.media.videos }} videos</span>
                             </div>
                         </div>
@@ -91,12 +91,12 @@ const quickActions = computed(() => allQuickActions.filter((a) => can(a.permissi
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <p class="small text-body-secondary mb-1">Categories</p>
+                                    <p class="small text-body-secondary mb-1">Categorías</p>
                                     <p class="h3 fw-bold mb-0">{{ statistics.categories.total }}</p>
                                 </div>
                                 <i class="bi bi-tags-fill display-6 text-primary"></i>
                             </div>
-                            <p class="small text-body-secondary mb-0 mt-3">Hierarchical structure</p>
+                            <p class="small text-body-secondary mb-0 mt-3">Estructura jerárquica</p>
                         </div>
                     </div>
                 </div>
@@ -106,18 +106,18 @@ const quickActions = computed(() => allQuickActions.filter((a) => can(a.permissi
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <p class="small text-body-secondary mb-1">Total Users</p>
+                                    <p class="small text-body-secondary mb-1">Total de usuarios</p>
                                     <p class="h3 fw-bold mb-0">{{ statistics.users.total }}</p>
                                 </div>
                                 <i class="bi bi-people-fill display-6 text-primary"></i>
                             </div>
-                            <p class="small text-success mb-0 mt-3">{{ statistics.users.active }} active</p>
+                            <p class="small text-success mb-0 mt-3">{{ statistics.users.active }} activos</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <h2 v-if="quickActions.length" class="h5 fw-bold mb-3">Modules</h2>
+            <h2 v-if="quickActions.length" class="h5 fw-bold mb-3">Módulos</h2>
             <div v-if="quickActions.length" class="row g-3 mb-4">
                 <div v-for="action in quickActions" :key="action.href" class="col-12 col-md-6 col-lg-4">
                     <Link :href="action.href" class="card shadow-sm h-100 text-decoration-none text-body link-action">
@@ -136,9 +136,9 @@ const quickActions = computed(() => allQuickActions.filter((a) => can(a.permissi
 
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h2 class="h5 fw-bold mb-3">System Status</h2>
+                    <h2 class="h5 fw-bold mb-3">Estado del sistema</h2>
                     <div class="row g-3">
-                        <div v-for="status in ['Database Connected', 'API Running', 'Storage Configured', 'Cache Active']" :key="status" class="col-12 col-md-6">
+                        <div v-for="status in ['Base de datos conectada', 'API en ejecución', 'Almacenamiento configurado', 'Caché activa']" :key="status" class="col-12 col-md-6">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="rounded-circle bg-success" style="width: 0.75rem; height: 0.75rem;"></span>
                                 <span class="small text-body-secondary">{{ status }}</span>

@@ -9,9 +9,11 @@ import Navbar from '../components/Navbar.vue';
 import SiteHead from '../components/SiteHead.vue';
 import Solutions from '../components/Solutions.vue';
 import Testimonials from '../components/Testimonials.vue';
+import VideoHighlight from '../components/VideoHighlight.vue';
 import type {
     SiteAlly,
     SiteCarouselSlide,
+    SiteHighlight,
     SiteSeoData,
     SiteSolution,
     SiteTestimonial,
@@ -23,6 +25,7 @@ defineProps<{
     testimonials: SiteTestimonial[];
     carousel: SiteCarouselSlide[];
     allies: SiteAlly[];
+    highlight: SiteHighlight | null;
     seo: SiteSeoData;
 }>();
 </script>
@@ -34,6 +37,7 @@ defineProps<{
         <Navbar />
         <Carousel :slides="carousel" />
         <Solutions :items="solutions" />
+        <VideoHighlight v-if="highlight" :highlight="highlight" />
         <About />
         <Testimonials :items="testimonials" />
         <Allies :items="allies" />

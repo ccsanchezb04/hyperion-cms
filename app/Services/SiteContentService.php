@@ -160,6 +160,33 @@ class SiteContentService
         );
     }
 
+    /**
+     * @return array{id: int, title: string, body: string, embed_url: ?string}|null
+     */
+    public function highlight(): ?array
+    {
+        return $this->remember('highlight', function () {
+            $content = Content::published()
+                ->with(['latestVersion'])
+                ->whereHas('categories', fn($q) => $q->where('cate_cdslug', 'destacado'))
+                ->latest('cont_dtpubl')
+                ->first();
+
+            if (! $content) {
+                return null;
+            }
+
+            [$title, $body] = $this->localizedTitleAndBody($content);
+
+            return [
+                'id'        => $content->cont_idcont,
+                'title'     => $title,
+                'body'      => $body,
+                'embed_url' => $content->cont_dsembd ?? null,
+            ];
+        });
+    }
+
     public function solutionBySlug(string $slug): ?array
     {
         return $this->remember('solution:' . $slug, function () use ($slug) {

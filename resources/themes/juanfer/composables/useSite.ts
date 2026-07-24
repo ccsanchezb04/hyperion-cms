@@ -55,6 +55,13 @@ export interface SiteSeoAlternate {
     href: string;
 }
 
+export interface SiteHighlight {
+    id: number;
+    title: string;
+    body: string;
+    embed_url: string | null;
+}
+
 export interface SiteAlly {
     id: number;
     name: string;

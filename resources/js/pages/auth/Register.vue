@@ -20,12 +20,12 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Create an account" description="Enter your details below to create your account">
-        <Head title="Register" />
+    <AuthBase title="Crear una cuenta" description="Ingresa tus datos para crear tu cuenta">
+        <Head title="Registro" />
 
         <form @submit.prevent="submit" class="d-flex flex-column gap-3">
             <div>
-                <label for="name" class="form-label">Name</label>
+                <label for="name" class="form-label">Nombre</label>
                 <input
                     id="name"
                     v-model="form.name"
@@ -36,13 +36,13 @@ const submit = () => {
                     autofocus
                     tabindex="1"
                     autocomplete="name"
-                    placeholder="Full name"
+                    placeholder="Nombre completo"
                 />
                 <InputError :message="form.errors.name" />
             </div>
 
             <div>
-                <label for="email" class="form-label">Email address</label>
+                <label for="email" class="form-label">Correo electrónico</label>
                 <input
                     id="email"
                     v-model="form.email"
@@ -52,13 +52,13 @@ const submit = () => {
                     required
                     tabindex="2"
                     autocomplete="email"
-                    placeholder="email@example.com"
+                    placeholder="correo@ejemplo.com"
                 />
                 <InputError :message="form.errors.email" />
             </div>
 
             <div>
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">Contraseña</label>
                 <input
                     id="password"
                     v-model="form.password"
@@ -68,13 +68,13 @@ const submit = () => {
                     required
                     tabindex="3"
                     autocomplete="new-password"
-                    placeholder="Password"
+                    placeholder="Contraseña"
                 />
                 <InputError :message="form.errors.password" />
             </div>
 
             <div>
-                <label for="password_confirmation" class="form-label">Confirm password</label>
+                <label for="password_confirmation" class="form-label">Confirmar contraseña</label>
                 <input
                     id="password_confirmation"
                     v-model="form.password_confirmation"
@@ -84,19 +84,19 @@ const submit = () => {
                     required
                     tabindex="4"
                     autocomplete="new-password"
-                    placeholder="Confirm password"
+                    placeholder="Confirmar contraseña"
                 />
                 <InputError :message="form.errors.password_confirmation" />
             </div>
 
             <button type="submit" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2" tabindex="5" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" :size="16" class="spinner" />
-                Create account
+                Crear cuenta
             </button>
 
             <div class="text-center text-body-secondary small">
-                Already have an account?
-                <TextLink :href="route('login')" :tabindex="6">Log in</TextLink>
+                ¿Ya tienes una cuenta?
+                <TextLink :href="route('login')" :tabindex="6">Iniciar sesión</TextLink>
             </div>
         </form>
     </AuthBase>

@@ -32,27 +32,27 @@ const closeModal = () => {
 
 <template>
     <div class="d-flex flex-column gap-3">
-        <HeadingSmall title="Delete account" description="Delete your account and all of its resources" />
+        <HeadingSmall title="Eliminar cuenta" description="Elimina tu cuenta y todos sus recursos" />
 
         <div class="alert alert-danger d-flex flex-column gap-3">
             <div>
-                <p class="fw-medium mb-1">Warning</p>
-                <p class="small mb-0">Please proceed with caution, this cannot be undone.</p>
+                <p class="fw-medium mb-1">Advertencia</p>
+                <p class="small mb-0">Procede con cuidado, esta acción no se puede deshacer.</p>
             </div>
             <div>
-                <button type="button" class="btn btn-danger" @click="showModal = true">Delete account</button>
+                <button type="button" class="btn btn-danger" @click="showModal = true">Eliminar cuenta</button>
             </div>
         </div>
 
-        <BModal v-model="showModal" title="Are you sure you want to delete your account?" hide-footer @hidden="closeModal">
+        <BModal v-model="showModal" title="¿Estás seguro de que deseas eliminar tu cuenta?" hide-footer @hidden="closeModal">
             <form class="d-flex flex-column gap-3" @submit="deleteUser">
                 <p class="small text-body-secondary mb-0">
-                    Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password to confirm
-                    you would like to permanently delete your account.
+                    Una vez eliminada tu cuenta, todos sus recursos y datos también serán eliminados permanentemente.
+                    Por favor ingresa tu contraseña para confirmar que deseas eliminar tu cuenta permanentemente.
                 </p>
 
                 <div>
-                    <label for="password" class="visually-hidden">Password</label>
+                    <label for="password" class="visually-hidden">Contraseña</label>
                     <input
                         id="password"
                         ref="passwordInput"
@@ -61,14 +61,14 @@ const closeModal = () => {
                         name="password"
                         class="form-control"
                         :class="{ 'is-invalid': form.errors.password }"
-                        placeholder="Password"
+                        placeholder="Contraseña"
                     />
                     <InputError :message="form.errors.password" />
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
-                    <button type="submit" class="btn btn-danger" :disabled="form.processing">Delete account</button>
+                    <button type="button" class="btn btn-secondary" @click="closeModal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger" :disabled="form.processing">Eliminar cuenta</button>
                 </div>
             </form>
         </BModal>

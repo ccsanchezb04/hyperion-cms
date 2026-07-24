@@ -23,6 +23,7 @@ class HomeController extends Controller
             'testimonials' => $this->site->testimonials(6),
             'carousel'     => $this->site->carousel(),
             'allies'       => $this->site->allies(),
+            'highlight'    => $this->site->highlight(),
             'seo'          => $this->seo->forHome(),
         ]);
     }

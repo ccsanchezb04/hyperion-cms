@@ -21,7 +21,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'Media Library', href: '/admin/media' },
+    { title: 'Biblioteca de medios', href: '/admin/media' },
 ];
 
 const filters = reactive({
@@ -49,9 +49,9 @@ const typeBadge: Record<string, string> = {
 };
 
 const typeLabels: Record<string, string> = {
-    image: 'Image',
+    image: 'Imagen',
     video: 'Video',
-    document: 'Document',
+    document: 'Documento',
 };
 
 const upload = (file: File) => {
@@ -74,7 +74,7 @@ const handleDrop = (event: DragEvent) => {
 };
 
 const deleteMedia = (id: number) => {
-    if (!confirm('Are you sure you want to delete this file?')) return;
+    if (!confirm('¿Estás seguro de que deseas eliminar este archivo?')) return;
     router.delete(`/admin/media/${id}`, { preserveScroll: true });
 };
 
@@ -83,13 +83,13 @@ const isVideo = (type: string) => type.startsWith('video/');
 </script>
 
 <template>
-    <Head title="Media Library" />
+    <Head title="Biblioteca de medios" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container-xl py-4">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <h1 class="h4 fw-bold mb-4">Media Library</h1>
+                    <h1 class="h4 fw-bold mb-4">Biblioteca de medios</h1>
 
                     <div
                         class="dropzone border border-2 border-dashed rounded p-5 text-center mb-4"
@@ -101,30 +101,30 @@ const isVideo = (type: string) => type.startsWith('video/');
                         <template v-if="!uploadForm.processing">
                             <i class="bi bi-cloud-arrow-up display-3 text-body-secondary"></i>
                             <p class="mt-2 small mb-1">
-                                <button type="button" class="btn btn-link p-0 fw-medium" @click="fileInput?.click()">Upload a file</button>
-                                or drag and drop
+                                <button type="button" class="btn btn-link p-0 fw-medium" @click="fileInput?.click()">Subir archivo</button>
+                                o arrastra y suelta
                             </p>
-                            <p class="small text-body-secondary mb-0">PNG, JPG, GIF, WEBP, MP4, PDF up to 10MB</p>
+                            <p class="small text-body-secondary mb-0">PNG, JPG, GIF, WEBP, MP4, PDF hasta 10MB</p>
                             <p v-if="uploadForm.errors.file" class="small text-danger mb-0 mt-2">{{ uploadForm.errors.file }}</p>
                         </template>
                         <template v-else>
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Uploading...</span>
+                                <span class="visually-hidden">Subiendo...</span>
                             </div>
-                            <p class="mt-2 small text-body-secondary mb-0">Uploading...</p>
+                            <p class="mt-2 small text-body-secondary mb-0">Subiendo...</p>
                         </template>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <input v-model="filters.search" type="text" class="form-control" placeholder="Search files..." @keyup.enter="applyFilters" />
+                            <input v-model="filters.search" type="text" class="form-control" placeholder="Buscar archivos..." @keyup.enter="applyFilters" />
                         </div>
                         <div class="col-12 col-md-6">
                             <select v-model="filters.type" class="form-select">
-                                <option value="">All Types</option>
-                                <option value="image">Images</option>
+                                <option value="">Todos los tipos</option>
+                                <option value="image">Imágenes</option>
                                 <option value="video">Videos</option>
-                                <option value="document">Documents</option>
+                                <option value="document">Documentos</option>
                             </select>
                         </div>
                     </div>
@@ -157,8 +157,8 @@ const isVideo = (type: string) => type.startsWith('video/');
 
                     <div v-else class="text-center py-5">
                         <i class="bi bi-images display-1 text-body-secondary"></i>
-                        <p class="mt-2 text-body-secondary mb-0">No media files found.</p>
-                        <p class="small text-body-secondary">Upload your first file to get started.</p>
+                        <p class="mt-2 text-body-secondary mb-0">No se encontraron archivos.</p>
+                        <p class="small text-body-secondary">Sube tu primer archivo para comenzar.</p>
                     </div>
                 </div>
             </div>

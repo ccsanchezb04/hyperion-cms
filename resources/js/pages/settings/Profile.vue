@@ -15,7 +15,7 @@ interface Props {
 
 defineProps<Props>();
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Profile settings', href: '/admin/settings/profile' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Configuración de perfil', href: '/admin/settings/profile' }];
 
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
@@ -32,15 +32,15 @@ const submit = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Profile settings" />
+        <Head title="Configuración de perfil" />
 
         <SettingsLayout>
             <div class="d-flex flex-column gap-4">
-                <HeadingSmall title="Profile information" description="Update your name and email address" />
+                <HeadingSmall title="Información del perfil" description="Actualiza tu nombre y correo electrónico" />
 
                 <form @submit.prevent="submit" class="d-flex flex-column gap-3">
                     <div>
-                        <label for="name" class="form-label">Name</label>
+                        <label for="name" class="form-label">Nombre</label>
                         <input
                             id="name"
                             v-model="form.name"
@@ -49,13 +49,13 @@ const submit = () => {
                             :class="{ 'is-invalid': form.errors.name }"
                             required
                             autocomplete="name"
-                            placeholder="Full name"
+                            placeholder="Nombre completo"
                         />
                         <InputError :message="form.errors.name" />
                     </div>
 
                     <div>
-                        <label for="email" class="form-label">Email address</label>
+                        <label for="email" class="form-label">Correo electrónico</label>
                         <input
                             id="email"
                             v-model="form.email"
@@ -64,25 +64,25 @@ const submit = () => {
                             :class="{ 'is-invalid': form.errors.email }"
                             required
                             autocomplete="username"
-                            placeholder="Email address"
+                            placeholder="Correo electrónico"
                         />
                         <InputError :message="form.errors.email" />
                     </div>
 
                     <div v-if="mustVerifyEmail && !user.email_verified_at" class="alert alert-warning py-2">
                         <p class="small mb-2">
-                            Your email address is unverified.
+                            Tu correo electrónico no está verificado.
                             <Link :href="route('verification.send')" method="post" as="button" class="btn btn-link p-0 text-decoration-underline">
-                                Click here to re-send the verification email.
+                                Haz clic aquí para reenviar el correo de verificación.
                             </Link>
                         </p>
                         <div v-if="status === 'verification-link-sent'" class="small text-success fw-medium mb-0">
-                            A new verification link has been sent to your email address.
+                            Se ha enviado un nuevo enlace de verificación a tu correo electrónico.
                         </div>
                     </div>
 
                     <div class="d-flex align-items-center gap-3">
-                        <button type="submit" class="btn btn-primary" :disabled="form.processing">Save</button>
+                        <button type="submit" class="btn btn-primary" :disabled="form.processing">Guardar</button>
 
                         <TransitionRoot
                             :show="form.recentlySuccessful"
@@ -91,7 +91,7 @@ const submit = () => {
                             leave="transition-opacity"
                             leave-to="opacity-0"
                         >
-                            <p class="small text-body-secondary mb-0">Saved.</p>
+                            <p class="small text-body-secondary mb-0">Guardado.</p>
                         </TransitionRoot>
                     </div>
                 </form>
