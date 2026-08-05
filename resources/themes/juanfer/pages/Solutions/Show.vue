@@ -5,6 +5,7 @@ import Footer from '../../components/Footer.vue';
 import Hero from '../../components/Hero.vue';
 import Navbar from '../../components/Navbar.vue';
 import SiteHead from '../../components/SiteHead.vue';
+import { useEmbed } from '../../composables/useEmbed';
 import type { SiteSeoData } from '../../composables/useSite';
 import { useSite } from '../../composables/useSite';
 import SiteLayout from '../../layouts/SiteLayout.vue';
@@ -26,13 +27,8 @@ const props = defineProps<{
 
 const { setting } = useSite();
 
-const embedSrc = computed((): string => {
-    const url = props.solution.embed_url?.trim();
-    if (!url) return '';
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-    return url;
-});
+const embedUrlRef = computed(() => props.solution.embed_url);
+const { embedSrc, isLinkedIn, externalUrl } = useEmbed(embedUrlRef);
 
 const categoryTagline = computed(() => {
     const cat = props.solution.category;
@@ -75,6 +71,16 @@ const categoryTagline = computed(() => {
                         :title="solution.title"
                         style="border: 0;"
                     />
+                </div>
+                <div v-else-if="isLinkedIn" class="mt-4 text-center">
+                    <a
+                        :href="externalUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="jf-btn"
+                    >
+                        Ver en LinkedIn &rarr;
+                    </a>
                 </div>
             </div>
         </section>

@@ -1,18 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useEmbed } from '../composables/useEmbed';
 import type { SiteHighlight } from '../composables/useSite';
 
 const props = defineProps<{
     highlight: SiteHighlight;
 }>();
 
-const embedSrc = computed((): string => {
-    const url = props.highlight.embed_url?.trim();
-    if (!url) return '';
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-    return url;
-});
+const urlRef = computed(() => props.highlight.embed_url);
+const { embedSrc, isLinkedIn, externalUrl } = useEmbed(urlRef);
 </script>
 
 <template>
@@ -32,6 +28,16 @@ const embedSrc = computed((): string => {
                             :title="highlight.title"
                             style="border: 0;"
                         ></iframe>
+                    </div>
+                    <div v-else-if="isLinkedIn" class="d-flex justify-content-center align-items-center py-4">
+                        <a
+                            :href="externalUrl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="jf-btn"
+                        >
+                            Ver en LinkedIn &rarr;
+                        </a>
                     </div>
                 </div>
             </div>
