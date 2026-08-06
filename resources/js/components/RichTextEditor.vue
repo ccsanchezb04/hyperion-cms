@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Extension, Node } from '@tiptap/core';
 import Underline from '@tiptap/extension-underline';
 import StarterKit from '@tiptap/starter-kit';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
@@ -13,12 +14,56 @@ const emit = defineEmits<{
     'update:modelValue': [value: string];
 }>();
 
+// Preserves `class` attribute on block nodes that StarterKit already handles.
+const ClassPreserver = Extension.create({
+    name: 'classPreserver',
+    addGlobalAttributes() {
+        return [
+            {
+                types: ['paragraph', 'heading', 'bulletList', 'orderedList', 'listItem', 'blockquote'],
+                attributes: {
+                    class: {
+                        default: null,
+                        parseHTML: (el: Element) => el.getAttribute('class'),
+                        renderHTML: (attrs: Record<string, unknown>) =>
+                            attrs.class ? { class: attrs.class } : {},
+                    },
+                },
+            },
+        ];
+    },
+});
+
+// Adds `<div>` as a block node so portfolio/section wrappers with custom
+// classes survive a round-trip through the WYSIWYG editor.
+const DivNode = Node.create({
+    name: 'div',
+    group: 'block',
+    content: 'block+',
+    addAttributes() {
+        return {
+            class: {
+                default: null,
+                parseHTML: (el: Element) => el.getAttribute('class'),
+                renderHTML: (attrs: Record<string, unknown>) =>
+                    attrs.class ? { class: attrs.class } : {},
+            },
+        };
+    },
+    parseHTML() {
+        return [{ tag: 'div' }];
+    },
+    renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
+        return ['div', HTMLAttributes, 0];
+    },
+});
+
 const showSource = ref(false);
 const sourceHtml = ref(props.modelValue ?? '');
 
 const editor = useEditor({
     content: props.modelValue ?? '',
-    extensions: [StarterKit, Underline],
+    extensions: [StarterKit, Underline, ClassPreserver, DivNode],
     editorProps: {
         attributes: { class: 'rte-content' },
     },
