@@ -122,7 +122,7 @@ const archiveContent = (id: number) => router.post(`/admin/contents/${id}/archiv
                                     <td class="text-end small">
                                         <div class="d-inline-flex gap-2">
                                             <Link :href="`/admin/contents/${content.id}/edit`" class="link-primary text-decoration-none">Editar</Link>
-                                            <button v-if="content.status === 'draft'" type="button" class="btn btn-link btn-sm text-success p-0" @click="publishContent(content.id)">Publicar</button>
+                                            <button v-if="content.status !== 'published'" type="button" class="btn btn-link btn-sm text-success p-0" @click="publishContent(content.id)">Publicar</button>
                                             <button v-if="content.status !== 'archived'" type="button" class="btn btn-link btn-sm text-warning p-0" @click="archiveContent(content.id)">Archivar</button>
                                             <button type="button" class="btn btn-link btn-sm text-danger p-0" @click="deleteContent(content.id)">Eliminar</button>
                                         </div>
