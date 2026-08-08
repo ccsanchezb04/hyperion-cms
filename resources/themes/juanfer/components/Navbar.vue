@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import logoSrc from '../assets/images/logos/logo_isotipo-05.png';
+import logoSrc from '../assets/images/logos/JF-logoblanco-R.png';
 import { useSite } from '../composables/useSite';
 import LanguageSwitcher from './LanguageSwitcher.vue';
 
