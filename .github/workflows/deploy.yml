@@ -84,7 +84,7 @@ jobs:
             -o BatchMode=yes \
             -o SendEnv=TERM \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "export TERM=xterm; set -e; cd ${{ secrets.DEPLOY_PATH }}/public && tar xzf build.tar.gz && rm build.tar.gz && rm -rf ${{ secrets.DEPLOY_WEBROOT }}/build && cp -r build ${{ secrets.DEPLOY_WEBROOT }}/build"
+            "export TERM=xterm; set -e; cd ${{ secrets.DEPLOY_PATH }}/public && tar xzf build.tar.gz && rm build.tar.gz && rm -rf ${{ vars.DEPLOY_WEBROOT }}/build && cp -r build ${{ vars.DEPLOY_WEBROOT }}/build"
 
       - name: Upload vendor to server
         if: steps.composer_changed.outputs.changed == 'true'
