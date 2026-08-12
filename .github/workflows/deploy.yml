@@ -21,20 +21,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      # ── Frontend ──────────────────────────────────────────────────────────
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install Node dependencies
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
-
-      # ── PHP vendor ────────────────────────────────────────────────────────
+      # ── PHP vendor (debe ir antes del build: Vite necesita ziggy de vendor) ─
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -51,6 +38,19 @@ jobs:
       - name: Install PHP dependencies
         if: steps.vendor-cache.outputs.cache-hit != 'true'
         run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      # ── Frontend ──────────────────────────────────────────────────────────
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
 
       # ── Detect composer.lock changes (skip vendor upload if unchanged) ────
       - name: Check if composer.lock changed
