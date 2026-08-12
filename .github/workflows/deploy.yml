@@ -82,12 +82,9 @@ jobs:
             -p ${{ secrets.DEPLOY_PORT }} \
             -o StrictHostKeyChecking=no \
             -o BatchMode=yes \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
-              cd ${{ secrets.DEPLOY_PATH }}/public
-              tar xzf build.tar.gz && rm build.tar.gz
-              rm -rf ${{ secrets.DEPLOY_WEBROOT }}/build
-              cp -r build ${{ secrets.DEPLOY_WEBROOT }}/build
-            "
+            -o SendEnv=TERM \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "export TERM=xterm; set -e; cd ${{ secrets.DEPLOY_PATH }}/public && tar xzf build.tar.gz && rm build.tar.gz && rm -rf ${{ secrets.DEPLOY_WEBROOT }}/build && cp -r build ${{ secrets.DEPLOY_WEBROOT }}/build"
 
       - name: Upload vendor to server
         if: steps.composer_changed.outputs.changed == 'true'
@@ -103,8 +100,9 @@ jobs:
             -p ${{ secrets.DEPLOY_PORT }} \
             -o StrictHostKeyChecking=no \
             -o BatchMode=yes \
+            -o SendEnv=TERM \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd ${{ secrets.DEPLOY_PATH }} && tar xzf vendor.tar.gz && rm vendor.tar.gz"
+            "export TERM=xterm; set -e; cd ${{ secrets.DEPLOY_PATH }} && tar xzf vendor.tar.gz && rm vendor.tar.gz"
 
       # ── Deploy en el servidor (solo git + artisan, sin composer/node) ─────
       - name: Deploy on server
@@ -113,15 +111,6 @@ jobs:
             -p ${{ secrets.DEPLOY_PORT }} \
             -o StrictHostKeyChecking=no \
             -o BatchMode=yes \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
-              set -e
-              cd ${{ secrets.DEPLOY_PATH }}
-              git pull origin main
-              php artisan storage:link --force
-              php artisan migrate --force
-              php artisan config:cache
-              php artisan route:cache
-              php artisan view:cache
-              php artisan event:cache
-              echo 'Deploy completed'
-            "
+            -o SendEnv=TERM \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "export TERM=xterm; set -e; cd ${{ secrets.DEPLOY_PATH }} && git pull origin main && php artisan storage:link --force && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache && echo 'Deploy completed'"
