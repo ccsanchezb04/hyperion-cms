@@ -113,6 +113,7 @@ jobs:
               set -e
               cd ${{ secrets.DEPLOY_PATH }}
               git pull origin main
+              php artisan storage:link --force
               php artisan migrate --force
               php artisan config:cache
               php artisan route:cache
