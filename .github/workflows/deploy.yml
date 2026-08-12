@@ -60,46 +60,63 @@ jobs:
             && echo "changed=true" >> $GITHUB_OUTPUT \
             || echo "changed=false" >> $GITHUB_OUTPUT
 
-      # ── Upload artifacts ──────────────────────────────────────────────────
+      # ── Preparar SSH key ──────────────────────────────────────────────────
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      # ── Upload artifacts (raw scp + TERM=xterm para evitar tput de GoDaddy) ─
       - name: Upload public/build to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          source: 'public/build/'
-          target: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          tar czf /tmp/build.tar.gz -C public build
+          TERM=xterm scp -i ~/.ssh/deploy_key \
+            -P ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            /tmp/build.tar.gz \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/public/"
+          TERM=xterm ssh -i ~/.ssh/deploy_key \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ${{ secrets.DEPLOY_PATH }}/public && tar xzf build.tar.gz && rm build.tar.gz"
 
       - name: Upload vendor to server
         if: steps.composer_changed.outputs.changed == 'true'
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          source: 'vendor/'
-          target: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          tar czf /tmp/vendor.tar.gz vendor
+          TERM=xterm scp -i ~/.ssh/deploy_key \
+            -P ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            /tmp/vendor.tar.gz \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
+          TERM=xterm ssh -i ~/.ssh/deploy_key \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ${{ secrets.DEPLOY_PATH }} && tar xzf vendor.tar.gz && rm vendor.tar.gz"
 
       # ── Deploy en el servidor (solo git + artisan, sin composer/node) ─────
       - name: Deploy on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          script: |
-            set -e
-            cd ${{ secrets.DEPLOY_PATH }}
-
-            git pull origin main
-
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            php artisan event:cache
-
-            echo "Deploy completed"
+        run: |
+          TERM=xterm ssh -i ~/.ssh/deploy_key \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
+              set -e
+              cd ${{ secrets.DEPLOY_PATH }}
+              git pull origin main
+              php artisan migrate --force
+              php artisan config:cache
+              php artisan route:cache
+              php artisan view:cache
+              php artisan event:cache
+              echo 'Deploy completed'
+            "
