@@ -36,21 +36,32 @@ const categoryTagline = computed(() => {
     return setting(`site.seo.category.${cat}.description`, '');
 });
 
-// Transforma HTML plano (H2 + UL del editor WYSIWYG) en tarjetas de portafolio.
-// Si el body ya tiene la clase jf-portfolio lo pasa sin modificar (compatibilidad).
+// Transforma HTML plano (H2/H3 + UL del editor WYSIWYG) en tarjetas de portafolio.
+// Solo omite la transformación si el body ya tiene tarjetas jf-portfolio__insurer completas.
 function buildPortfolioBody(raw: string): string {
     if (!raw) return '';
-    if (raw.includes('jf-portfolio')) return raw;
 
     try {
         const doc = new DOMParser().parseFromString(raw, 'text/html');
+
+        // Estructura completa ya presente → pasar sin modificar
+        if (doc.querySelector('.jf-portfolio__insurer')) return raw;
+
+        // Buscar el contenedor de partida: si hay un .jf-portfolio roto lo usamos,
+        // sino tomamos el body directamente
+        const source: Element = doc.querySelector('.jf-portfolio') ?? doc.body;
+        const children = Array.from(source.children);
+
+        // Si no hay H2/H3 no hay nada que transformar → devolver tal cual
+        const hasHeadings = children.some((c) => c.tagName === 'H2' || c.tagName === 'H3');
+        if (!hasHeadings) return raw;
+
         const portfolio = document.createElement('div');
         portfolio.className = 'jf-portfolio';
-
         let card: HTMLElement | null = null;
 
-        for (const child of Array.from(doc.body.children)) {
-            if (child.tagName === 'H2') {
+        for (const child of children) {
+            if (child.tagName === 'H2' || child.tagName === 'H3') {
                 card = document.createElement('div');
                 card.className = 'jf-portfolio__insurer';
                 const name = document.createElement('div');
@@ -62,6 +73,8 @@ function buildPortfolioBody(raw: string): string {
                 const list = child.cloneNode(true) as HTMLElement;
                 list.classList.add('jf-portfolio__products');
                 card.appendChild(list);
+            } else if (card) {
+                card.appendChild(child.cloneNode(true));
             } else {
                 portfolio.appendChild(child.cloneNode(true));
             }
