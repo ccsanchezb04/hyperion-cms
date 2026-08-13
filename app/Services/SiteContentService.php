@@ -205,7 +205,7 @@ class SiteContentService
                 // slug = el del locale activo (lo usa el Vue para nav interna)
                 'title' => $title,
                 'slug' => $slugs[$currentLang] ?? $content->cont_cdslug,
-                'body' => $body,
+                'body' => $this->buildPortfolioBody($body),
                 'embed_url' => $content->cont_dsembd ?? null,
                 'image' => $this->primaryImageUrl($content),
                 'media' => $content->media
@@ -420,5 +420,71 @@ class SiteContentService
     {
         $media = $content->media->first();
         return $media ? Storage::url($media->medi_dspath) : null;
+    }
+
+    /**
+     * Transforma HTML plano (H2/H3 + UL del editor WYSIWYG) en la estructura
+     * de tarjetas jf-portfolio. Si el body ya tiene .jf-portfolio__insurer
+     * lo devuelve sin modificar.
+     */
+    protected function buildPortfolioBody(string $body): string
+    {
+        if (empty($body)) {
+            return $body;
+        }
+
+        // Ya tiene estructura completa de tarjetas → no transformar
+        if (str_contains($body, 'jf-portfolio__insurer')) {
+            return $body;
+        }
+
+        // Sin H2/H3 → no es un portafolio, devolver tal cual
+        if (! preg_match('/<h[23][^>]*>/i', $body)) {
+            return $body;
+        }
+
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8"?>' . $body, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+
+        $portfolio = $dom->createElement('div');
+        $portfolio->setAttribute('class', 'jf-portfolio');
+
+        $card = null;
+        $source = $dom->documentElement ?? $dom;
+
+        // Recorre nodos hijos directos del body parseado
+        $nodes = iterator_to_array($source->childNodes);
+        foreach ($nodes as $node) {
+            if (! $node instanceof \DOMElement) {
+                continue;
+            }
+
+            $tag = strtoupper($node->nodeName);
+
+            if ($tag === 'H2' || $tag === 'H3') {
+                $card = $dom->createElement('div');
+                $card->setAttribute('class', 'jf-portfolio__insurer');
+
+                $nameDiv = $dom->createElement('div');
+                $nameDiv->setAttribute('class', 'jf-portfolio__insurer-name');
+                $nameDiv->textContent = $node->textContent;
+
+                $card->appendChild($nameDiv);
+                $portfolio->appendChild($card);
+
+            } elseif (($tag === 'UL' || $tag === 'OL') && $card !== null) {
+                $list = $node->cloneNode(true);
+                $existing = $list->getAttribute('class');
+                $list->setAttribute('class', trim($existing . ' jf-portfolio__products'));
+                $card->appendChild($list);
+
+            } elseif ($card !== null) {
+                $card->appendChild($node->cloneNode(true));
+            }
+        }
+
+        return $dom->saveHTML($portfolio);
     }
 }
