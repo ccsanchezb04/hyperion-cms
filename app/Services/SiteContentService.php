@@ -478,6 +478,20 @@ class SiteContentService
                 $list = $node->cloneNode(true);
                 $existing = $list->getAttribute('class');
                 $list->setAttribute('class', trim($existing . ' jf-portfolio__products'));
+                // TipTap wraps <li> content in <p> — unwrap to keep uniform spacing
+                foreach ($list->childNodes as $li) {
+                    if (! $li instanceof \DOMElement || strtoupper($li->nodeName) !== 'LI') {
+                        continue;
+                    }
+                    $children = iterator_to_array($li->childNodes);
+                    if (count($children) === 1 && $children[0] instanceof \DOMElement && strtoupper($children[0]->nodeName) === 'P') {
+                        $p = $children[0];
+                        foreach (iterator_to_array($p->childNodes) as $pChild) {
+                            $li->insertBefore($pChild->cloneNode(true), $p);
+                        }
+                        $li->removeChild($p);
+                    }
+                }
                 $card->appendChild($list);
 
             } elseif ($card !== null) {
