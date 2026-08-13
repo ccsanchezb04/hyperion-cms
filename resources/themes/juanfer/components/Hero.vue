@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import logoSrc from '../assets/images/logos/logo_isotipo-05.png';
+import logoSrc from '../assets/images/logos/JF-logoblanco-R.png';
 </script>
 
 <template>
