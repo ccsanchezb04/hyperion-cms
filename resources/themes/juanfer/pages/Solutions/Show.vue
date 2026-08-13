@@ -35,6 +35,45 @@ const categoryTagline = computed(() => {
     if (!cat) return '';
     return setting(`site.seo.category.${cat}.description`, '');
 });
+
+// Transforma HTML plano (H2 + UL del editor WYSIWYG) en tarjetas de portafolio.
+// Si el body ya tiene la clase jf-portfolio lo pasa sin modificar (compatibilidad).
+function buildPortfolioBody(raw: string): string {
+    if (!raw) return '';
+    if (raw.includes('jf-portfolio')) return raw;
+
+    try {
+        const doc = new DOMParser().parseFromString(raw, 'text/html');
+        const portfolio = document.createElement('div');
+        portfolio.className = 'jf-portfolio';
+
+        let card: HTMLElement | null = null;
+
+        for (const child of Array.from(doc.body.children)) {
+            if (child.tagName === 'H2') {
+                card = document.createElement('div');
+                card.className = 'jf-portfolio__insurer';
+                const name = document.createElement('div');
+                name.className = 'jf-portfolio__insurer-name';
+                name.innerHTML = child.innerHTML;
+                card.appendChild(name);
+                portfolio.appendChild(card);
+            } else if ((child.tagName === 'UL' || child.tagName === 'OL') && card) {
+                const list = child.cloneNode(true) as HTMLElement;
+                list.classList.add('jf-portfolio__products');
+                card.appendChild(list);
+            } else {
+                portfolio.appendChild(child.cloneNode(true));
+            }
+        }
+
+        return portfolio.outerHTML;
+    } catch {
+        return raw;
+    }
+}
+
+const portfolioBody = computed(() => buildPortfolioBody(props.solution.body));
 </script>
 
 <template>
@@ -62,7 +101,7 @@ const categoryTagline = computed(() => {
         <!-- Portafolio de productos -->
         <section class="py-5" style="background: var(--jf-bg-muted)">
             <div class="container">
-                <div class="jf-solution-body" v-html="solution.body" />
+                <div class="jf-solution-body" v-html="portfolioBody" />
                 <div v-if="embedSrc" class="ratio ratio-16x9 mt-4 rounded overflow-hidden shadow-sm">
                     <iframe
                         :src="embedSrc"
