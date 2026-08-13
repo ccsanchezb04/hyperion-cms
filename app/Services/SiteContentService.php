@@ -178,13 +178,42 @@ class SiteContentService
 
             [$title, $body] = $this->localizedTitleAndBody($content);
 
+            [$embedUrl, $body] = $this->extractBlockquoteEmbed($body);
+
             return [
                 'id'        => $content->cont_idcont,
                 'title'     => $title,
                 'body'      => $body,
-                'embed_url' => $content->cont_dsembd ?? null,
+                'embed_url' => $embedUrl,
             ];
         });
+    }
+
+    /**
+     * Extrae la URL de embed del primer <blockquote> del body HTML.
+     * TipTap envuelve el texto en <p>, por lo que el patrón soporta ambas
+     * formas: <blockquote><p>URL</p></blockquote> y <blockquote>URL</blockquote>.
+     * El blockquote se elimina del body resultante para no mostrarlo al usuario.
+     *
+     * @return array{0: ?string, 1: string}
+     */
+    protected function extractBlockquoteEmbed(string $body): array
+    {
+        if (! str_contains($body, '<blockquote')) {
+            return [null, $body];
+        }
+
+        // Captura URL dentro del primer blockquote (con o sin <p> intermedio)
+        $pattern = '/<blockquote[^>]*>\s*(?:<p[^>]*>)?\s*(https?:\/\/\S+?)\s*(?:<\/p>)?\s*<\/blockquote>/is';
+
+        if (! preg_match($pattern, $body, $m)) {
+            return [null, $body];
+        }
+
+        $embedUrl = trim(strip_tags($m[1]));
+        $cleanBody = trim(preg_replace($pattern, '', $body, 1));
+
+        return [$embedUrl, $cleanBody];
     }
 
     public function solutionBySlug(string $slug): ?array
