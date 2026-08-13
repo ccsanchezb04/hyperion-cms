@@ -9,6 +9,7 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { BOffcanvas } from 'bootstrap-vue-next';
 import {
+    BookOpen,
     FileText,
     Image,
     Inbox,
@@ -39,6 +40,7 @@ const allNavItems: NavItem[] = [
     { title: 'Temas', href: '/admin/themes', icon: Paintbrush, permission: 'manage-settings' },
     { title: 'SEO', href: '/admin/seo', icon: Search, permission: 'manage-seo' },
     { title: 'Configuración', href: '/admin/settings', icon: Settings, permission: 'view-settings' },
+    { title: 'Manual de usuario', href: '/admin/ayuda', icon: BookOpen },
 ];
 
 const mainNavItems = computed(() => allNavItems.filter((item) => can(item.permission)));

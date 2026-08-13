@@ -110,6 +110,8 @@ Route::prefix('admin')->group(function () {
                 Route::post('/activate', [ThemeController::class, 'activate'])->name('activate');
             });
 
+        Route::get('ayuda', fn () => inertia('Help/Index'))->name('admin.help');
+
         Route::prefix('contact-messages')->name('admin.contact-messages.')
             ->middleware('permission:view-contact-messages')
             ->group(function () {
