@@ -8,7 +8,7 @@ const props = defineProps<{
 }>();
 
 const urlRef = computed(() => props.highlight.embed_url);
-const { embedSrc, isLinkedIn, externalUrl } = useEmbed(urlRef);
+const { embedSrc, isLinkedIn, isTikTok, tikTokEmbedSrc, externalUrl } = useEmbed(urlRef);
 </script>
 
 <template>
@@ -23,6 +23,15 @@ const { embedSrc, isLinkedIn, externalUrl } = useEmbed(urlRef);
                     <div v-if="embedSrc" class="ratio ratio-16x9 rounded overflow-hidden shadow-sm">
                         <iframe
                             :src="embedSrc"
+                            allowfullscreen
+                            loading="lazy"
+                            :title="highlight.title"
+                            style="border: 0;"
+                        ></iframe>
+                    </div>
+                    <div v-else-if="isTikTok" class="ratio rounded overflow-hidden shadow-sm" style="--bs-aspect-ratio: 177%;">
+                        <iframe
+                            :src="tikTokEmbedSrc"
                             allowfullscreen
                             loading="lazy"
                             :title="highlight.title"
