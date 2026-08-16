@@ -27,6 +27,7 @@ class Content extends Model
         'cont_cdtype',
         'cont_cdstat',
         'cont_dsembd',
+        'cont_nrorde',
         'cont_idauth',
         'cont_dtpubl',
     ];
@@ -38,6 +39,7 @@ class Content extends Model
         'cont_cdtype' => 'string',
         'cont_cdstat' => 'string',
         'cont_dsembd' => 'string',
+        'cont_nrorde' => 'integer',
         'cont_idauth' => 'integer',
         'cont_dtpubl' => 'datetime',
         'cont_dtcrea' => 'datetime',

@@ -141,6 +141,7 @@ class SiteContentService
                 $query = Content::published()
                     ->with(['media'])
                     ->whereHas('categories', fn ($q) => $q->where('cate_cdslug', 'aliados'))
+                    ->orderByRaw('cont_nrorde IS NULL, cont_nrorde ASC')
                     ->orderBy('cont_dtcrea');
 
                 if ($limit !== null) {

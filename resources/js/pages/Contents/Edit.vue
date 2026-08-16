@@ -27,6 +27,7 @@ interface ContentDetail {
     slug: string;
     type: string;
     status: string;
+    sortOrder: number | null;
     body: string;
     embedUrl: string;
     categories: number[];
@@ -73,6 +74,7 @@ const form = useForm({
     slug: props.content.slug,
     type: props.content.type,
     status: props.content.status,
+    sort_order: props.content.sortOrder ?? null,
     body: props.content.body,
     embed_url: props.content.embedUrl ?? '',
     categories: [...props.content.categories],
@@ -202,7 +204,7 @@ const embedSrc = computed((): string => {
                         </div>
 
                         <div class="row g-3">
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-5">
                                 <label class="form-label">Tipo</label>
                                 <select v-model="form.type" class="form-select">
                                     <option value="post">Post</option>
@@ -210,13 +212,24 @@ const embedSrc = computed((): string => {
                                     <option value="custom">Personalizado</option>
                                 </select>
                             </div>
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-5">
                                 <label class="form-label">Estado</label>
                                 <select v-model="form.status" class="form-select">
                                     <option value="draft">Borrador</option>
                                     <option value="published">Publicado</option>
                                     <option value="archived">Archivado</option>
                                 </select>
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <label class="form-label">Orden</label>
+                                <input
+                                    v-model.number="form.sort_order"
+                                    type="number"
+                                    min="0"
+                                    max="9999"
+                                    class="form-control"
+                                    placeholder="—"
+                                />
                             </div>
                         </div>
 

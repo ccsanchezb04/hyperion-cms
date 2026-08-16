@@ -82,6 +82,7 @@ class ContentController extends Controller
             'cont_cdtype' => $validated['type'],
             'cont_cdstat' => $validated['status'],
             'cont_dsembd' => $validated['embed_url'] ?? null,
+            'cont_nrorde' => $validated['sort_order'] ?? null,
             'cont_idauth' => $request->user()->user_iduser,
             'cont_dtpubl' => $validated['status'] === Content::STATUS_PUBLISHED ? now() : null,
         ]);
@@ -116,6 +117,7 @@ class ContentController extends Controller
                 'slug'         => $content->cont_cdslug,
                 'type'         => $content->cont_cdtype,
                 'status'       => $content->cont_cdstat,
+                'sortOrder'    => $content->cont_nrorde,
                 'body'         => $content->latestVersion?->cove_dsbody ?? '',
                 'embedUrl'     => $content->cont_dsembd ?? '',
                 'categories'   => $content->categories->pluck('cate_idcate')->all(),
@@ -146,6 +148,7 @@ class ContentController extends Controller
             'cont_cdtype' => $validated['type'],
             'cont_cdstat' => $validated['status'],
             'cont_dsembd' => $validated['embed_url'] ?? null,
+            'cont_nrorde' => $validated['sort_order'] ?? null,
             'cont_dtpubl' => $validated['status'] === Content::STATUS_PUBLISHED && ! $wasPublished
                 ? now()
                 : $content->cont_dtpubl,
@@ -231,6 +234,7 @@ class ContentController extends Controller
             'status'       => ['required', Rule::in([Content::STATUS_DRAFT, Content::STATUS_PUBLISHED, Content::STATUS_ARCHIVED])],
             'body'         => ['nullable', 'string'],
             'embed_url'    => ['nullable', 'string', 'max:500'],
+            'sort_order'   => ['nullable', 'integer', 'min:0', 'max:9999'],
             'categories'   => ['nullable', 'array'],
             'categories.*' => ['integer', 'exists:hycms_categories,cate_idcate'],
             'media_ids'    => ['nullable', 'array'],
