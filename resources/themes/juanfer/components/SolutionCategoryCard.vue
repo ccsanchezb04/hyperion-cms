@@ -6,18 +6,10 @@ const props = defineProps<{
     category: string | null;
     href: string;
     image: string | null;
+    description: string;
 }>();
 
 const emit = defineEmits<{ select: [] }>();
-
-const taglines: Record<string, string> = {
-    salud:    'Cuidamos tu salud y el bienestar de los tuyos.',
-    vida:     'Protegemos tu autonomía, tus ingresos y el futuro de tu familia.',
-    movilidad:'Te acompañamos en cada camino, seguro y sin preocupaciones.',
-    hogar:    'Protegemos tu lugar seguro, cuidamos tus bienes y patrimonio.',
-    empresas: 'Impulsamos tu crecimiento, protegemos tu inversión, cuidamos tu equipo humano.',
-    rentas:   'Brindamos tranquilidad financiera para asegurar tu futuro.',
-};
 
 const iconMap: Record<string, string> = {
     salud: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
@@ -28,8 +20,7 @@ const iconMap: Record<string, string> = {
     rentas: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
 };
 
-const tagline = computed(() => taglines[props.category ?? ''] ?? '');
-const icon    = computed(() => iconMap[props.category ?? ''] ?? iconMap.salud);
+const icon = computed(() => iconMap[props.category ?? ''] ?? iconMap.salud);
 </script>
 
 <template>
@@ -38,7 +29,7 @@ const icon    = computed(() => iconMap[props.category ?? ''] ?? iconMap.salud);
         <div class="jf-sol-card__body">
             <div v-if="!image" class="jf-sol-card__icon" v-html="icon" />
             <h3 class="jf-sol-card__title">{{ title }}</h3>
-            <p class="jf-sol-card__desc">{{ tagline }}</p>
+            <p class="jf-sol-card__desc">{{ description }}</p>
             <span class="jf-sol-card__cta">Ver portafolio &rarr;</span>
         </div>
     </a>
@@ -63,7 +54,7 @@ const icon    = computed(() => iconMap[props.category ?? ''] ?? iconMap.salud);
 
 .jf-sol-card__img {
     width: 100%;
-    height: 180px;
+    height: 220px;
     object-fit: cover;
     display: block;
     transition: transform 0.35s ease;

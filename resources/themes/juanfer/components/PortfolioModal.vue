@@ -9,17 +9,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: [] }>();
 
-const taglines: Record<string, string> = {
-    salud:     'Cuidamos tu salud y el bienestar de los tuyos.',
-    vida:      'Protegemos tu autonomía, tus ingresos y el futuro de tu familia.',
-    movilidad: 'Te acompañamos en cada camino, seguro y sin preocupaciones.',
-    hogar:     'Protegemos tu lugar seguro, cuidamos tus bienes y patrimonio.',
-    empresas:  'Impulsamos tu crecimiento, protegemos tu inversión, cuidamos tu equipo humano.',
-    rentas:    'Brindamos tranquilidad financiera para asegurar tu futuro.',
-};
-
-const tagline = (cat: string | null) => (cat ? (taglines[cat] ?? '') : '');
-
 const lockScroll   = () => { document.body.style.overflow = 'hidden'; };
 const unlockScroll = () => { document.body.style.overflow = ''; };
 
@@ -61,8 +50,8 @@ const cotiza = () => {
                     <div class="jf-pm-header jf-dark-bg">
                         <div class="jf-pm-header__text">
                             <h2 class="jf-pm-title jf-heading">{{ solution.title }}</h2>
-                            <p v-if="tagline(solution.category)" class="jf-pm-tagline">
-                                {{ tagline(solution.category) }}
+                            <p v-if="solution.description" class="jf-pm-tagline">
+                                {{ solution.description }}
                             </p>
                         </div>
                         <div class="jf-pm-header__actions">

@@ -228,6 +228,8 @@ class SiteContentService
             [$title, $body] = $this->localizedTitleAndBody($content);
             $slugs = $this->slugsByLocale($content);
             $currentLang = $this->locale->current();
+            $settingLang = $this->locale->isDefault() ? null : $currentLang;
+            $catSlug = $this->solutionCategorySlug($content);
 
             return [
                 'id' => $content->cont_idcont,
@@ -245,7 +247,10 @@ class SiteContentService
                     ])
                     ->values()
                     ->all(),
-                'category' => $this->solutionCategorySlug($content),
+                'category' => $catSlug,
+                'description' => $catSlug
+                    ? (Setting::getValue("site.seo.category.{$catSlug}.description", '', $settingLang) ?? '')
+                    : '',
                 'published_at' => $content->cont_dtpubl?->toDateTimeString(),
                 'slugs' => $slugs,
                 'seo_override' => $content->seo ? [
@@ -385,23 +390,53 @@ class SiteContentService
 
         $solutionsPrefix = $this->locale->isDefault() ? '/soluciones/' : '/' . $this->locale->current() . '/solutions/';
         $currentLang = $this->locale->current();
+        $settingLang = $this->locale->isDefault() ? null : $currentLang;
+
+        $descriptions = $this->categoryDescriptions($settingLang);
 
         return $query->get()
-            ->map(function (Content $c) use ($solutionsPrefix, $currentLang) {
+            ->map(function (Content $c) use ($solutionsPrefix, $currentLang, $descriptions) {
                 [$title, $body] = $this->localizedTitleAndBody($c);
                 $slugs = $this->slugsByLocale($c);
                 $linkSlug = $slugs[$currentLang] ?? $c->cont_cdslug;
+                $catSlug = $this->solutionCategorySlug($c);
                 return [
-                    'id'       => $c->cont_idcont,
-                    'title'    => $title,
-                    'slug'     => $linkSlug,
-                    'body'     => $body,
-                    'image'    => $this->primaryImageUrl($c),
-                    'href'     => $solutionsPrefix . $linkSlug,
-                    'category' => $this->solutionCategorySlug($c),
+                    'id'          => $c->cont_idcont,
+                    'title'       => $title,
+                    'slug'        => $linkSlug,
+                    'body'        => $body,
+                    'image'       => $this->primaryImageUrl($c),
+                    'href'        => $solutionsPrefix . $linkSlug,
+                    'category'    => $catSlug,
+                    'description' => $catSlug ? ($descriptions["site.seo.category.{$catSlug}.description"] ?? '') : '',
                 ];
             })
             ->all();
+    }
+
+    /**
+     * Carga en una sola query todas las descripciones de categorías de soluciones,
+     * mergeando locale sobre defaults cuando corresponde.
+     *
+     * @return array<string, string>
+     */
+    protected function categoryDescriptions(?string $lang): array
+    {
+        $defaults = Setting::where('sett_cdkeys', 'like', 'site.seo.category.%.description')
+            ->whereNull('sett_cdlang')
+            ->pluck('sett_dsvalu', 'sett_cdkeys')
+            ->toArray();
+
+        if ($lang === null) {
+            return $defaults;
+        }
+
+        $localized = Setting::where('sett_cdkeys', 'like', 'site.seo.category.%.description')
+            ->where('sett_cdlang', $lang)
+            ->pluck('sett_dsvalu', 'sett_cdkeys')
+            ->toArray();
+
+        return array_merge($defaults, $localized);
     }
 
     /**

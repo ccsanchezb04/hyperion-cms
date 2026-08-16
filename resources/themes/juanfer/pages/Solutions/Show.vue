@@ -7,7 +7,6 @@ import Navbar from '../../components/Navbar.vue';
 import SiteHead from '../../components/SiteHead.vue';
 import { useEmbed } from '../../composables/useEmbed';
 import type { SiteSeoData } from '../../composables/useSite';
-import { useSite } from '../../composables/useSite';
 import SiteLayout from '../../layouts/SiteLayout.vue';
 
 const props = defineProps<{
@@ -20,21 +19,14 @@ const props = defineProps<{
         image: string | null;
         media: Array<{ url: string; alt: string }>;
         category: string | null;
+        description: string;
         published_at: string | null;
     };
     seo: SiteSeoData;
 }>();
 
-const { setting } = useSite();
-
 const embedUrlRef = computed(() => props.solution.embed_url);
 const { embedSrc, isLinkedIn, externalUrl } = useEmbed(embedUrlRef);
-
-const categoryTagline = computed(() => {
-    const cat = props.solution.category;
-    if (!cat) return '';
-    return setting(`site.seo.category.${cat}.description`, '');
-});
 
 </script>
 
@@ -50,7 +42,7 @@ const categoryTagline = computed(() => {
                 <div class="row align-items-center gy-3">
                     <div class="col-12 col-lg-8">
                         <h1 class="jf-heading mb-2">{{ solution.title }}</h1>
-                        <p v-if="categoryTagline" class="text-white-50 mb-0 fs-5">{{ categoryTagline }}</p>
+                        <p v-if="solution.description" class="text-white-50 mb-0 fs-5">{{ solution.description }}</p>
                     </div>
                     <div class="col-12 col-lg-4 d-flex gap-2 justify-content-lg-end flex-wrap">
                         <button class="jf-btn">Cotiza ya</button>

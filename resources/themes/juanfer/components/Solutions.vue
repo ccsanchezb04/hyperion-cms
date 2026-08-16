@@ -27,6 +27,7 @@ const active = ref<SiteSolution | null>(null);
                         :category="s.category"
                         :href="s.href"
                         :image="s.image"
+                        :description="s.description"
                         @select="active = s"
                     />
                 </div>

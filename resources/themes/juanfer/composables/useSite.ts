@@ -21,6 +21,7 @@ export interface SiteSolution {
     image: string | null;
     href: string;
     category: string | null;
+    description: string;
 }
 
 export interface SiteTestimonial {
