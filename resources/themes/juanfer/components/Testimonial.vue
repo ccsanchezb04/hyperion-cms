@@ -15,6 +15,33 @@ defineProps<{
 </template>
 
 <style scoped>
+.jf-testimonial-body {
+    position: relative;
+    max-height: 9.5rem; /* ~330 chars a ~16px */
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+}
+
+.jf-testimonial-body::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2.5rem;
+    background: linear-gradient(transparent, var(--bs-card-bg, #fff));
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.card:hover .jf-testimonial-body {
+    max-height: 100rem;
+}
+
+.card:hover .jf-testimonial-body::after {
+    opacity: 0;
+}
+
 .jf-testimonial-body :deep(p) {
     margin-bottom: 0.5rem;
 }
