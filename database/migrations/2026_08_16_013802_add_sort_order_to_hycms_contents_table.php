@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('hycms_contents', function (Blueprint $table) {
-            $table->unsignedSmallInteger('cont_nrorde')->nullable()->after('cont_dsembd');
+            $table->unsignedSmallInteger('cont_nrorde')->nullable();
         });
     }
 

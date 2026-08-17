@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { reactive } from 'vue';
 import type { SeoSettings, SolutionCategory } from '../Index.vue';
 
 const props = defineProps<{

@@ -61,11 +61,13 @@ defineProps<{
         />
     </Head>
 
+    <!-- eslint-disable vue/no-v-text-v-html-on-component -->
     <component
         v-for="(block, i) in seo.json_ld"
         :key="i"
-        is="script"
+        :is="'script'"
         type="application/ld+json"
         v-html="JSON.stringify(block)"
     />
+    <!-- eslint-enable vue/no-v-text-v-html-on-component -->
 </template>

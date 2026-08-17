@@ -155,7 +155,7 @@ const subjectLabel = (slug: string): string => {
                                 class="page-item"
                                 :class="{ active: link.active, disabled: !link.url }"
                             >
-                                <Link v-if="link.url" :href="link.url" class="page-link" v-html="link.label" />
+                                <Link v-if="link.url" :href="link.url" class="page-link"><span v-html="link.label" /></Link>
                                 <span v-else class="page-link" v-html="link.label" />
                             </li>
                         </ul>

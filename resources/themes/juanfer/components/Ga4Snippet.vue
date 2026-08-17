@@ -21,4 +21,4 @@ onMounted(() => {
 });
 </script>
 
-<template></template>
+<template><span style="display:none"></span></template>

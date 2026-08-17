@@ -20,7 +20,7 @@ onUnmounted(() => {
     unlockScroll();
 });
 
-watch(() => props.solution, (val) => { val ? lockScroll() : unlockScroll(); });
+watch(() => props.solution, (val) => { if (val) { lockScroll(); } else { unlockScroll(); } });
 
 const { set: setPrefill } = useContactPrefill();
 
@@ -29,7 +29,8 @@ const cotiza = () => {
     emit('close');
     // Espera a que el modal cierre antes de hacer scroll
     setTimeout(() => {
-        document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+        const el = document.getElementById('contacto');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
     }, 260);
 };
 </script>

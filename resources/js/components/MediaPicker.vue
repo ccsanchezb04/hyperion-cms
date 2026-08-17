@@ -21,9 +21,6 @@ const selectedMedia = computed(() =>
     props.availableMedia.filter((m) => props.modelValue.includes(m.id)),
 );
 
-const unselectedMedia = computed(() =>
-    props.availableMedia.filter((m) => !props.modelValue.includes(m.id)),
-);
 
 const add = (id: number) => {
     if (!props.modelValue.includes(id)) {
